@@ -36,7 +36,7 @@ const sidebars = {
         title: "WhatsApp Cloud API",
         description:
           "Use o CodeChat para enviar e receber mensagens personalizadas em grande escala e criar automação com agentes virtuais, aprimorando a experiência do cliente e melhorando a produtividade dos funcionários.",
-        slug: "/api/v3.0.0",
+        slug: "/",
       },
       items: require("./docs/openapi/v3.0.0/sidebar.js"),
     }

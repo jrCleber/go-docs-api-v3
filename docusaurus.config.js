@@ -64,7 +64,7 @@ const config = {
         logo: {
           alt: "CodeChat",
           src: "img/logo.png",
-          href: "/api/v3.0.0"
+          href: "/"
         },
         items: [
           // {
@@ -76,7 +76,7 @@ const config = {
           {
             label: "API",
             position: "left",
-            to: "/api/v3.0.0",
+            to: "/",
           },
           {
             label: "Webhook",
