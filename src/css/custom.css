@@ -1,0 +1,297 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
+
+:root {
+  --ifm-color-primary: #4a90e2;
+  /* Azul mais suave */
+  --ifm-color-primary-dark: #4285f4;
+  /* Variação de azul */
+  --ifm-color-primary-darker: #3773e5;
+  /* Azul mais escuro */
+  --ifm-color-primary-darkest: #2c62d6;
+  /* Azul ainda mais escuro */
+  --ifm-color-primary-light: #5ba1f6;
+  /* Azul claro */
+  --ifm-color-primary-lighter: #6bb2f9;
+  /* Azul mais claro */
+  --ifm-color-primary-lightest: #7ec3fc;
+  /* Azul bem claro */
+  --ifm-background-color: #f2f2f2;
+  /* Cinza claro para o fundo */
+  --ifm-font-color-base: #333333;
+  /* Cinza escuro para texto */
+  --ifm-font-family-monospace: "Fira Code", monospace;
+  --ifm-font-size-base: 95%;
+  --ifm-code-font-size: 90%;
+
+  a:any-link {
+    color: #868d97;
+  }
+
+  a:hover {
+    color: #2d91c0;
+  }
+
+  .header-github-link:before,
+  .header-medium-link:before {
+    filter: brightness(0.9);
+    /* Ajuste de brilho para ícones */
+  }
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme="dark"] {
+  --ifm-color-primary: #5b87a3;
+  --ifm-color-primary-dark: #154360;
+  --ifm-color-primary-darker: #102a3f;
+  --ifm-color-primary-darkest: #0b1e29;
+  --ifm-color-primary-light: #2e6f95;
+  --ifm-color-primary-lighter: #3d8db1;
+  --ifm-color-primary-lightest: #56a5c4;
+  --ifm-background-color: #060a1ea8 !important;
+  /* Cinza claro para o fundo */
+  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.2);
+  --ifm-font-color-base: #d1d1d1 !important;
+
+  a:any-link {
+    color: #cfd1d3;
+  }
+
+  a:hover {
+    color: #2d91c0;
+  }
+
+  .header-github-link:before,
+  .header-medium-link:before {
+    filter: brightness(0.75);
+    /* Ajuste de brilho para ícones */
+  }
+}
+
+[data-theme="dark"] .navbar {
+  background-color: #0f122d;
+}
+
+[data-theme="dark"] a.card {
+  background-color: #0f122d !important;
+}
+
+[data-theme="dark"] ul.dropdown__menu {
+  background-color: #060a1e !important;
+}
+
+/* Override --ifm text-decoration */
+a:any-link:hover {
+  text-decoration: none;
+}
+
+li span.openapi-tabs__schema-label {
+  font-size: 0.8rem;
+}
+
+h2 code {
+  font-size: 1.5rem !important;
+}
+
+/* li code {
+  color: #6d6d6d !important;
+} */
+
+/* li em {
+  color: #909393 !important;
+} */
+
+/* h4 code {
+  color: #6d6d6d !important;
+  border: 0;
+  background-color: rgba(0, 0, 0, 0) !important;
+} */
+
+code {
+  font-size: 1rem !important;
+  color: #d63384 !important;
+  word-wrap: break-word;
+  background-color: rgb(246, 247, 248) !important;
+  border: 0.1rem solid rgba(0, 0, 0, 0.1);
+  border-radius: 0.4rem;
+  font-family: "Fira Code", monospace;
+  padding: 0.1rem 0.1rem;
+  vertical-align: middle;
+}
+
+body {
+  font-size: 1rem;
+  transition: background-color 0.3s, color 0.3s;
+  font-family: "Open Sans", sans-serif;
+  color: var( --ifm-font-color-base);
+  background-color: var(--ifm-background-color);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Roboto", "Outfit", sans-serif;
+  font-weight: 400;
+}
+
+img {
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+summary h3,
+summary h4 {
+  margin-bottom: 0;
+}
+
+summary h4 {
+  padding-top: 3px;
+}
+
+details {
+  background-color: transparent !important;
+  border-color: transparent !important;
+}
+
+ul.table-of-contents {
+  font-size: 0.9rem !important;
+}
+
+.sponsor-btn {
+  background-color: var(--ifm-color-primary);
+  color: white;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  text-decoration: none !important;
+  margin-bottom: 10px;
+}
+
+.prism-code {
+  font-size: 0.75rem;
+}
+
+/* Sidebar Method labels */
+.api-method > .menu__link {
+  align-items: center;
+  justify-content: start;
+}
+
+.api-method > .menu__link::before {
+  width: 50px;
+  height: 20px;
+  font-size: 12px;
+  line-height: 20px;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-radius: 0.25rem;
+  border: 1px solid;
+  margin-right: var(--ifm-spacing-horizontal);
+  text-align: center;
+  flex-shrink: 0;
+  border-color: transparent;
+  color: white;
+}
+
+.get > .menu__link::before {
+  content: "get";
+  background-color: var(--ifm-color-primary);
+}
+
+.post > .menu__link::before {
+  content: "post";
+  background-color: var(--openapi-code-green);
+}
+
+.delete > .menu__link::before {
+  content: "del";
+  background-color: var(--openapi-code-red);
+}
+
+.put > .menu__link::before {
+  content: "put";
+  background-color: var(--openapi-code-blue);
+}
+
+.patch > .menu__link::before {
+  content: "patch";
+  background-color: var(--openapi-code-orange);
+}
+
+.head > .menu__link::before {
+  content: "head";
+  background-color: var(--ifm-color-secondary-darkest);
+}
+
+/* GitHub Header Link */
+.header-github-link:hover {
+  opacity: 0.6;
+}
+
+.header-github-link:before {
+  content: "";
+  width: 24px;
+  height: 24px;
+  display: flex;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/%3E%3C/svg%3E")
+    no-repeat;
+}
+
+html[data-theme="dark"] .header-github-link:before {
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='white' d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/%3E%3C/svg%3E")
+    no-repeat;
+}
+
+/* Medium Header Link */
+.header-medium-link:hover {
+  opacity: 0.6;
+}
+
+.header-medium-link:before {
+  content: "\f23a";
+  font-family: "Font Awesome 5 Brands";
+  font-size: x-large;
+}
+
+/* Center all columns in main wrapper */
+.main-wrapper {
+  max-width: 1400px;
+  width: 1400px;
+  align-self: center;
+}
+
+.main-wrapper h1[class^="docTitle"] {
+  font-size: 2.8rem;
+}
+
+@media (max-width: 1416px) {
+  .main-wrapper {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+@media (max-width: 1320px) and (min-width: 997px) {
+  .container {
+    max-width: calc(
+      var(--ifm-container-width) - 125px - var(--ifm-spacing-horizontal) * 2
+    );
+  }
+}
+
+/* Center navbar items */
+.navbar__inner {
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+.col.col--5.openapi-right-panel__container
+  .tabs-container.openapi-tabs__code-container {
+  display: none;
+}

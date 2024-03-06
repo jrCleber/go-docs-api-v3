@@ -1,0 +1,4488 @@
+openapi: 3.0.0
+
+info:
+  title: Eventos de notificação de webhook da interação com o WhatsApp
+  description: |
+
+    Bem-vindo à documentação detalhada dos eventos de webhook de nossa API. Este documento serve como um recurso essencial para desenvolvedores que buscam integrar nossos serviços de mensagens instantâneas com suas próprias aplicações, através da utilização de webhooks para capturar eventos em tempo real.
+
+    Os webhooks são mecanismos poderosos que permitem que sistemas externos recebam notificações automáticas sobre eventos específicos, sem a necessidade de polling contínuo. Ao se inscrever em nossos webhooks, seu sistema será imediatamente informado sobre atividades relevantes, como sincronizações offline, emparelhamentos de dispositivos, atualizações de presença e mudanças no estado da conexão websocket.
+
+    Nesta documentação, você encontrará uma lista abrangente de todos os eventos que nossa API pode disparar, junto com uma descrição detalhada de suas propriedades. Para cada evento, fornecemos informações sobre:
+
+    - **Nome do Evento**: Uma identificação clara do evento, facilitando a referência e o manuseio em seu código.
+    - **Descrição**: Um resumo do que o evento representa e em que circunstâncias é acionado.
+    - **Propriedades**: Os detalhes e os tipos de dados de cada propriedade associada ao evento, permitindo que você entenda e utilize os dados transmitidos.
+    - **Exemplos de Payload**: Exemplos práticos de como o payload do evento é estruturado, ajudando você a parsear e processar os dados recebidos.
+
+    Seja para melhorar a reatividade de suas aplicações, automatizar fluxos de trabalho ou simplesmente para manter-se informado sobre as atividades dos usuários, nossa API de eventos de webhook é projetada para oferecer a flexibilidade e a eficiência que você precisa.
+
+    Estamos aqui para ajudar você a aproveitar ao máximo essas integrações. Se tiver alguma dúvida ou precisar de assistência adicional, nossa equipe de suporte está pronta para ajudar.
+
+    ---
+
+    ### Trabalhando com `multipart/form-data` em Webhooks
+
+    Os webhooks configurados para usar `multipart/form-data` enviam dados como se estivessem submetendo um formulário web. Isso significa que os dados são enviados em partes, cada uma contendo possivelmente diferentes tipos de conteúdo. No contexto de webhooks, isso pode ser útil para transmitir dados junto com arquivos diretamente para o seu endpoint, permitindo que você processe ambos com uma única requisição.
+
+    ### Manipulando `multipart/form-data` em Node.js
+
+    Para trabalhar com dados `multipart/form-data` em Node.js, especialmente ao receber esse tipo de conteúdo através de webhooks, é recomendável usar um middleware capaz de parsear esse tipo de dados. Um dos pacotes mais comuns para essa finalidade é o `multer`, que é projetado para lidar com dados `multipart/form-data` de uma forma fácil e eficiente.
+
+    #### Passos para Utilizar o Multer
+
+    1. **Instalação**: Primeiro, você precisa instalar o `multer` em seu projeto Node.js. Isso pode ser feito através do npm ou yarn:
+      ```bash
+      npm install multer
+      ```
+      ou
+      ```bash
+      yarn add multer
+      ```
+
+    2. **Configuração do Middleware**: Em seguida, importe o `multer` e configure-o como um middleware em sua aplicação. Você pode configurá-lo globalmente ou apenas para rotas específicas que esperam receber `multipart/form-data`.
+      ```js
+      const express = require('express');
+      ```
+
+      #### Configuração do Multer
+      ```js
+      const multer  = require('multer');
+
+      const upload = multer(
+        limits: {
+          fieldNameSize: 100, // permitir nomes de campos com até 100 bytes
+          fieldSize: 1024 * 1024 * 100, // o valor do campo pode conter até 100mb
+        }
+      );
+      ```
+      * `fieldNameSize`: 100: Esta configuração especifica o tamanho máximo em bytes para os nomes dos campos recebidos na requisição. Neste caso, você definiu um limite de 100 bytes para os nomes dos campos. Isso é útil quando você espera receber campos com nomes longos ou quando quer se proteger contra possíveis ataques de exaustão de recursos, onde nomes de campos excessivamente longos poderiam ser usados para tentar sobrecarregar o servidor.
+
+      * `fieldSize`: 1024 * 1024 * 100: Aqui, você configurou o multer para aceitar valores de campo de até 100MB. Isso é particularmente importante para campos que contêm grandes quantidades de dados, como arquivos codificados em base64, grandes documentos de texto, etc. Aumentar esse limite permite que sua aplicação receba e processe grandes quantidades de dados em um único campo.
+
+      ```js
+      app.use(
+        urlencoded({ extended: true, limit: '100mb' }),
+        json({ limit: '100mb' })
+      )
+      ```
+
+      * `urlencoded({ extended: true, limit: '100mb' })`: Este middleware é utilizado para parsear corpos de requisições que estão codificados em URL (normalmente submissões de formulários). O extended: true indica que o middleware é capaz de lidar com dados complexos (arrays, objetos, etc.). O limit: '100mb' aumenta o limite padrão para o tamanho do corpo da requisição, permitindo que corpos de até 100MB sejam processados. Isso é útil para aplicações que precisam receber grandes formulários ou dados codificados em URL.
+
+      * `json({ limit: '100mb' })`: Similarmente, este middleware configura o limite para corpos de requisição formatados como JSON, também até 100MB. Isso garante que sua aplicação possa receber e processar requisições JSON volumosas, o que é comum em cenários que envolvem o envio de grandes quantidades de dados estruturados em uma única requisição, como o carregamento de grandes conjuntos de dados ou documentos.
+
+      ```js
+      const app = express();
+
+      app.post('/your-webhook-endpoint', upload.none(), (req, res) => {
+        console.log(req.body); // Demais dados enviados no corpo da requisição.
+        res.status(200).send('Dados recebidos com sucesso.');
+      });
+      ```
+    3. **Processamento dos Dados**: Quando um webhook é acionado e sua requisição chega ao endpoint configurado, o `multer` parseia automaticamente o multipart/form-data, salvando os arquivos no diretório especificado e tornando os dados dos arquivos e qualquer outro campo de texto disponíveis em req.files e req.body, respectivamente.
+
+  version: 1.0.0
+  contact:
+    name: jrcleber
+    url: https://github.com/code-chat-br
+    email: cleber@codechat.dev
+  x-logo:
+    altText: codechat
+    url: /images/codechat.png
+  license:
+    name: 'Termos e Serviços'
+    url: https://cloudzapi.com
+
+servers:
+  - url: ''
+
+x-servers:
+  - url: https://apiv3.codechat.dev
+
+paths:
+  /:
+    summary: ''
+
+security: []
+
+components:
+  parameters:
+    InstanceIdHeader:
+      name: x-instance
+      in: header
+      description: Identificador da Instância.
+      required: true
+      schema:
+        title: X-Instance
+        type: string
+    WhatsAppHeader:
+      name: x-whatsapp
+      in: header
+      description: Número do dispositivo conectado.
+      required: true
+      schema:
+        title: X-WhatsApp
+        type: string
+  responses:
+    SuccessfulResponse:
+      description: >-
+        Recebeu com sucesso o estado da instância.
+        O servidor reconheceu a solicitação e retornou o status 200 para indicar a recuperação bem-sucedida dos dados.
+  schemas:
+    WhatsApp:
+      title: WhatsApp
+      type: object
+      required:
+        - number
+        - lastConnection
+      properties:
+        number:
+          type: string
+          title: Number
+          description: Número do dispositivo conectado.
+        lastConnection:
+          type: string
+          format: date-time
+          title: Last Connection
+          description: Data da última conexão.
+    Instance:
+      title: Instance
+      type: object
+      required:
+        - instanceId
+        - name
+        - state
+        - status
+        - connection
+        - createdAt
+      properties:
+        instanceId:
+          type: string
+          title: Instance ID
+          description: ID da instância conectada.
+        name:
+          type: string
+          title: name
+          description: Nome da instância conectada.
+        state:
+          type: string
+          enum:
+            - active
+            - inactive
+          title: State
+          description: >-
+            Indica a condição geral da instância:
+              * `active`: indica que a instância está em operação;
+              * `inactive`: indica que a instância está desligada.
+        status:
+          type: string
+          title: Status
+          enum:
+            - created
+            - waiting
+            - booting
+            - available
+            - deleted
+          description: >-
+            Fornece detalhes sobre a fase atual no ciclo de vida da instância. O **status** pode indicar uma fase transitória, condições temporárias e definitivos.;
+              * `created`: a instância foi criada, mas ainda não está completamente disponível;
+              * `waiting`: indica que a instância já está operacional e pronta para a conexão;
+              * `booting`: a instância está no processo de conexão, preparando para se tornar disponível;
+              * `available`: indica que a instância já completou todo o processo de conexão e está pronta para uso;
+              * `deleted`: a instância foi desativada e deletada permanentemente.
+                - A deleção só irá ocorre após o logout da conexão.
+        connection:
+          type: string
+          title: Connection
+          enum:
+            - close
+            - open
+            - refused
+          description: Representa o estado atual da conexão com o WhatsApp.
+        createdAt:
+          type: string
+          format: date-time
+          title: Created At
+          description: Data da criação da instância.
+        WhatsApp:
+          allOf:
+            - $ref: '#/components/schemas/WhatsApp'
+    KeyMessage:
+      title: Key Message
+      type: object
+      required:
+        - remoteJid
+        - fromMe
+        - id
+      properties:
+        remoteJid:
+          title: Remote Jid
+          type: string
+        fromMe:
+          title: From Me
+          type: boolean
+        id:
+          title: ID
+          type: string
+    AppState:
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - app.state
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          additionalProperties: true
+    AppStateSyncComplete:
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - app.state:sync-complete
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          additionalProperties: true
+    ArchiveChat:
+      title: Archive Chat
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - archive.chat
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - jid
+            - timestamp
+            - action
+          properties:
+            jid:
+              type: string
+              title: JID
+              description: Identificador do chat arquivado.
+            timestamp:
+              type: string
+              format: date-time
+              title: timestamp
+            action:
+              title: Action
+              type: object
+              required:
+                - archived
+                - lastMessageTimestamp
+                - messages
+              properties:
+                archived:
+                  title: archived
+                  type: boolean
+                lastMessageTimestamp:
+                  title: Last Message Timestamp
+                  type: string
+                  format: date-time
+                messages:
+                  title: Messages
+                  type: array
+                  items:
+                    title: Items
+                    type: object
+                    required:
+                      - key
+                      - timestamp
+                    properties:
+                      key:
+                        allOf:
+                          - $ref: '#/components/schemas/KeyMessage'
+                      timestamp:
+                        title: Timestamp
+                        type: string
+                        format: date-time
+    BlockList:
+      title: Block List
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - block.List
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - action
+            - dHas,
+            - prevDHash
+            - changes
+          properties:
+            action:
+              title: Action
+              type: string
+            dHas:
+              title: dHas
+              type: string
+            prevDHash:
+              title: prevDHash
+              type: string
+            changes:
+              title: Changes
+              type: array
+              items:
+                type: object
+                required:
+                  - JID
+                  - action
+                properties:
+                  JID:
+                    title: JID
+                    type: string
+                  action:
+                    title: Action
+                    type: string
+                    enum:
+                      - block
+                      - unblock
+    DataCall:
+      title: Data
+      type: object
+      required:
+        - from
+        - timestamp
+        - callCreator
+        - callID
+        - remotePlatform
+        - remoteVersion
+      properties:
+        from:
+          title: From
+          type: string
+          description: Destinatário da chamada
+        timestamp:
+          title: Timestamp
+          type: string
+          format: date-time
+        callCreator:
+          title: Call Creator
+          type: string
+          description: Criado da chamada
+        callID:
+          title: Call ID
+          type: string
+          description: Id da chamada
+        remotePlatform:
+          title: Remote Platform
+          type: string
+        remoteVersion:
+          title: Remote version
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+    CallAccept:
+      title: Call Accept
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - call.accept
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          allOf:
+            - $ref: '#/components/schemas/DataCall'
+    CallOffer:
+      title: Call Accept
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - call.offer
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          allOf:
+            - $ref: '#/components/schemas/DataCall'
+    CallOfferNotice:
+      title: Call Offer - Notice
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - call.offer:notice
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - from
+            - timestamp
+            - callCreator
+            - callID
+            - media
+            - type
+          properties:
+            from:
+              title: From
+              type: string
+              description: Destinatário da chamada
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            callCreator:
+              title: Call Creator
+              type: string
+              description: Criado da chamada
+            callID:
+              title: Call ID
+              type: string
+              description: Id da chamada
+            media:
+              title: Media
+              type: string
+              enum:
+                - audio
+            type:
+              title: Type
+              type: string
+              enum:
+                - group
+            data:
+              type: object
+              additionalProperties: true
+    CallPreAccept:
+      title: Call Accept
+      deprecated: true
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - call.pre:accept
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          allOf:
+            - $ref: '#/components/schemas/DataCall'
+    CallRelayLatency:
+      title: Call Relay - Latency
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - call.realy:latency
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - from
+            - timestamp
+            - callCreator
+            - callID
+          properties:
+            from:
+              title: From
+              type: string
+              description: Destinatário da chamada
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            callCreator:
+              title: Call Creator
+              type: string
+              description: Criado da chamada
+            callID:
+              title: Call ID
+              type: string
+              description: Id da chamada
+            data:
+              title: Data
+              type: object
+              additionalProperties: true
+    CallTerminate:
+      title: Call Termindate
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - call.terminate
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - from
+            - timestamp
+            - callCreator
+            - callID
+            - reason
+          properties:
+            from:
+              title: From
+              type: string
+              description: Destinatário da chamada
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            callCreator:
+              title: Call Creator
+              type: string
+              description: Criado da chamada
+            callID:
+              title: Call ID
+              type: string
+              description: Id da chamada
+            reason:
+              title: Reason
+              type: string
+              enum:
+                - timeout
+    CallTransport:
+      title: Call Accept
+      type: object
+      deprecated: true
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - call.transport
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          allOf:
+            - $ref: '#/components/schemas/DataCall'
+    ChatClear:
+      title: Chat Clear
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - chat.clear
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - jid
+            - timestamp
+            - action
+          properties:
+            jid:
+              title: Jid
+              type: string
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            action:
+              title: Action
+              type: object
+              required:
+                - messageRange
+              properties:
+                messageRange:
+                  title: Message Range
+                  type: object
+                  required:
+                    - lastMessageTimestamp
+                    - lastSystemMessageTimestamp
+                    - messages
+                  properties:
+                    lastMessageTimestamp:
+                      title: Last Message Timestamp
+                      type: string
+                      format: date-time
+                    lastSystemMessageTimestamp:
+                      title: Last System Message Timestamp
+                      type: string
+                      format: date-time
+                    messages:
+                      title: Messages
+                      type: array
+                      items:
+                        title: Items
+                        type: object
+                        required:
+                          - key
+                          - timestamp
+                        properties:
+                          key:
+                            allOf:
+                              - $ref: '#/components/schemas/KeyMessage'
+                          timestamp:
+                            title: Timestamp
+                            type: string
+                            format: date-time
+    ChatDelete:
+      title: Chat Delete
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - chat.delete
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - jid
+            - timestamp
+            - action
+          properties:
+            jid:
+              title: Jid
+              type: string
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            action:
+              title: Action
+              type: object
+              required:
+                - messageRange
+              properties:
+                messageRange:
+                  title: Message Range
+                  type: object
+                  required:
+                    - messages
+                    - lastSystemMessageTimestamp
+                  properties:
+                    lastSystemMessageTimestamp:
+                      title: Last System Message Timestamp
+                      type: string
+                      format: date-time
+                    messages:
+                      title: Messages
+                      type: array
+                      items:
+                        title: Items
+                        type: object
+                        required:
+                          - key
+                          - timestamp
+                        properties:
+                          key:
+                            allOf:
+                              - $ref: '#/components/schemas/KeyMessage'
+                          timestamp:
+                            title: Timestamp
+                            type: string
+                            format: date-time
+    ChatMute:
+      title: Chat Mute
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - chat.mute
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - jid
+            - timestamp
+            - action
+            - fromFullSync
+          properties:
+            jid:
+              title: Jid
+              type: string
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            action:
+              title: Action
+              type: object
+              required:
+                - muted
+              properties:
+                muted:
+                  title: Muted
+                  type: boolean
+                muteEndTimestamp:
+                  title: Mute End Timestamp
+                  type: integer
+            fromFullSync:
+              title: From Full Sync
+              type: boolean
+    ChatSettingArchived:
+      title: Chat Settings - Archived
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - chat.settings:archived
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - timestamp
+            - action
+          properties:
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            action:
+              title: Action
+              type: object
+              properties:
+                unarchiveChats:
+                  title: Unarchive Chats
+                  type: boolean
+    ConnectionUpdate:
+      title: Connection Update
+      type: object
+      required:
+        - status
+        - statusReason
+        - message
+        - timestamp
+      properties:
+        status:
+          title: Status
+          type: string
+          enum:
+            - refused
+            - close
+            - open
+            - connecting
+          description: Representa o estado atual da conexão com o WhatsApp.
+        statusReason:
+          title: Status Reason
+          type: integer
+          enum:
+            - 400
+            - 401
+            - 402
+            - 403
+            - 405
+            - 406
+            - 409
+            - 413
+            - 414
+            - 415
+            - 500
+            - 503
+        message:
+          title: Message
+          type: string
+        timestamp:
+          title: Timestamp
+          type: string
+          format: date-time
+    ClientOutdated:
+      title: Client Outdated
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          enum:
+            - client.outdated
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          required:
+            - status
+            - statusReason
+            - message
+            - timestamp
+          properties:
+            status:
+              title: Status
+              type: string
+              default: refused
+            statusReason:
+              title: Status Reason
+              type: integer
+              default: 409
+            message:
+              title: Message
+              type: string
+              default: client user agent was rejected
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+    ConnectFailure:
+      title: Connection Failure
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          enum:
+            - connect.failure
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          allOf:
+            - $ref: '#/components/schemas/ConnectionUpdate'
+    Contact:
+      title: Contact
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - contact.upsert
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - jid
+            - timestamp
+            - action
+            - fromFullSync
+          properties:
+            jid:
+              title: Jid
+              type: string
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            action:
+              title: Action
+              type: object
+              required:
+                - fullName
+                - lidJid
+              properties:
+                fullName:
+                  title: Full Name
+                  type: string
+                lidJid:
+                  title: Lid JID
+                  type: string
+            fromFullSync:
+              title: From Full Sync
+              type: boolean
+    DeleteForMe:
+      title: Delete For - Me
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - delete.for:me
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - chatJID
+            - senderJID
+            - isFromMe
+            - messageID
+            - action
+            - timestamp
+            - fromFullSync
+          properties:
+            chatJID:
+              title: Chat Jid
+              type: string
+            senderJID:
+              title: Sender JID
+              type: string
+            isFromMe:
+              title: Is From Me
+              type: boolean
+            messageID:
+              title: Message ID
+              type: string
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            action:
+              title: Action
+              type: object
+              required:
+                - deleteMedia
+                - messageTimestamp
+              properties:
+                deleteMedia:
+                  title: Delete Media
+                  type: boolean
+                messageTimestamp:
+                  title: Message Timestamp
+                  type: string
+                  format: date-time
+            fromFullSync:
+              title: From Full Sync
+              type: boolean
+    GroupLinkChange:
+      title: Group Link Changes
+      type: object
+      required:
+        - Type
+        - UnlinkReason
+        - Group
+      properties:
+        Type:
+          title: Type
+          type: string
+          enum:
+            - parent_group
+            - sub_group
+            - sibling_group
+        UnlinkReason:
+          title: Un Link Reason
+          type: string
+          enum:
+            - unlink_group
+            - delete_parent
+        Group:
+          title: Group
+          type: object
+          required:
+            - JID
+            - GroupName
+            - GroupIsDefaultSub
+          properties:
+            JID:
+              title: Jid
+              type: string
+            GroupName:
+              title: Name
+              type: object
+              required:
+                - Name
+                - NameSetAt
+                - NameSetBy
+              properties:
+                Name:
+                  title: Name
+                  type: string
+                NameSetAt:
+                  title: Name Set At
+                  type: string
+                  format: date-time
+                NameSetBy:
+                  title: Name Set By
+                  type: string
+            GroupIsDefaultSub:
+              title: Group Is Default Sub
+              type: object
+              required:
+                - IsDefaultSubGroup
+              properties:
+                IsDefaultSubGroup:
+                  title: Is Default Sub Group
+                  type: string
+    GroupUpdateSettings:
+      title: Group Update - Settings
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - group.update:settings
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - type
+            - activated
+            - jid
+            - notify
+            - name
+            - timestamp
+          properties:
+            jid:
+              title: JID
+              type: string
+            notify:
+              title: Notify
+              type: string
+            name:
+              title: Name
+              type: string
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            settings:
+              title: Settings
+              type: object
+              required:
+                - type
+                - activate
+              properties:
+                type:
+                  title: Type
+                  enum:
+                    - locked
+                    - announce
+                    - ephemeral
+                  description: >-
+                    São alterações nas configurações de grupos:
+                      * `locked`: Alteração de status de grupo bloqueado (somente os administradores podem editar as informações do grupo).
+                      * `announce`: Alteração nas configurações no chat do grupo (somente administradores podem enviar mensagens).
+                      * `ephemeral`: Alteração na configuração das mensagens de desaparecimento.
+                activated:
+                  title: Activated
+                  type: boolean
+                announceVersionID:
+                  title: Announce Version ID
+                  type: string
+                  description: Associado ao tipo `announce`
+    GroupUpdateParticipants:
+      title: Group Update - Participants
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - group.update:participants
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - type
+            - participants
+            - jid
+            - notify
+            - name
+            - timestamp
+          properties:
+            jid:
+              title: JID
+              type: string
+            notify:
+              title: Notify
+              type: string
+            name:
+              title: Name
+              type: string
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            participants:
+              title: Participants
+              type: object
+              required:
+                - type
+                - jids
+              properties:
+                type:
+                  title: Type
+                  type: string
+                  enum:
+                    - join
+                    - leave
+                    - promote
+                    - demote
+                  description: |
+                    Alteração nos participantes do grupo:
+                      * `join`: Usuários que ingressaram ou foram adicionados ao grupo.
+                      * `leave`: Usuários que saíram ou foram removidos do grupo.
+                      * `promote`: Usuários que foram promovidos a administradores.
+                      * `demote`: Usuários que foram rebaixados a usuários normais.
+                jids:
+                  title: JIDs
+                  type: array
+                  items:
+                    type: string
+                  description: |
+                    Exemplo:
+                      ```json
+                      [
+                        "123@s.whatsapp.net",
+                        "456@s.whatsapp.net",
+                        "12548964587463@lid"
+                      ]
+                      ```
+    GroupUpdate:
+      title: Group Update
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - group.update
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - jid
+            - notify
+            - sender
+            - timestamp
+          properties:
+            jid:
+              title: Jid
+              type: string
+              description: O ID do grupo em questão.
+            notify:
+              title: Notify
+              type: string
+              description: Parece um tipo de convite de nível superior.
+            sender:
+              title: Sender
+              type: string
+              description: O usuário que fez a alteração. Não parece estar presente quando notify=invite.
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+              description: O momento em que a alteração ocorreu.
+            name:
+              title: Name
+              type: object
+              description: Alteração no nome do grupo.
+              required:
+                - Name
+                - NameSetAt
+                - NameSetBy
+              properties:
+                Name:
+                  title: Name
+                  type: string
+                NameSetAt:
+                  title: Name Set At
+                  type: string
+                  format: date-time
+                NameSetBy:
+                  title: Name Set By
+                  type: string
+            topic:
+              title: Topic
+              type: object
+              description: Alteração do tópico do grupo (descrição).
+              properties:
+                Topic:
+                  title: Topic
+                  type: string
+                TopicID:
+                  title: TopicID
+                  type: string
+                TopicSetAt:
+                  title: Topic Set At
+                  type: string
+                  format: date-time
+                TopicSetBy:
+                  title: Topic Set By
+                  type: string
+                TopicDeleted:
+                  title: Topic Deleted
+                  type: boolean
+            delete:
+              title: Delete
+              type: object
+              properties:
+                Deleted:
+                  title: Deleted
+                  type: boolean
+                DeleteReason:
+                  title: Delete Reason
+                  type: string
+            link:
+              allOf:
+                - $ref: '#/components/schemas/GroupLinkChange'
+            unlink:
+              allOf:
+                - $ref: '#/components/schemas/GroupLinkChange'
+            newInviteLink:
+              title: New Invite Link
+              type: string
+              description: Alteração do link de convite do grupo.
+            prevParticipantVersionID:
+              title: Prev Participant Version Id
+              type: string
+            participantVersionID:
+              title: Participant Version Id
+              type: string
+            joinReason:
+              title: Join Reason
+              type: string
+              description: Será `invite` se o usuário tiver entrado por meio do link de convite.
+            unknownChanges:
+              title: Unknowm Changes
+              type: array
+              description: |
+                ```json
+                {
+                  "Tag": "member_add_mode",
+                  "Attrs": null,
+                  "Content": "YWRtaW5fYWRk"
+                }
+                ```
+              items:
+                type: object
+                additionalProperties: true
+    Conversation:
+      title: Conversation
+      type: object
+      required:
+        - id
+        - messages
+      properties:
+        id:
+          title: ID
+          type: string
+          description: Chat onde as mensagens foram trocadas.
+        messages:
+          title: Messages
+          type: array
+          description: Mensagens ligadas ao `id`.
+          items:
+            type: object
+            additionalProperties: true
+    SyncConversations:
+      title: Sync Type - Code **0** e **3**
+      type: object
+      description: >-
+        Hitórico de Mensagens
+          * `0`: Carregamento inicial do lote de mensagens;
+          * `3`: Carregamento secundário do lote de mensagens.
+          * `6`: Carregamento por demanda
+      required:
+        - syncType
+        - conversations
+      properties:
+        syncType:
+          title: Sync Type
+          type: integer
+          enum:
+            - 0
+            - 3
+            - 6
+        conversations:
+          title: Conversations
+          type: array
+          items:
+            type: object
+            $ref: '#/components/schemas/Conversation'
+    SyncStatus:
+      title: Sync Type - Conde **1**
+      type: object
+      description: Carregamento dos **Stories**.
+      required:
+        - syncType
+        - statusV3Messages
+      properties:
+        syncType:
+          title: Sync Type
+          type: integer
+          enum:
+            - 1
+        statusV3Messages:
+          title: Status Broadcast
+          type: array
+          items:
+            type: object
+            $ref: '#/components/schemas/Conversation'
+    SyncDataNonBlockingData:
+      title: Sync Type - Code **5**
+      type: object
+      required:
+        - syncType
+        - recentStickers
+        - pastParticipants
+      description: Carregamento de dados não bloqueados.
+      properties:
+        syncType:
+          title: Sync Type
+          type: integer
+          enum:
+            - 5
+        recentStickers:
+          title: Recent Stickers
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        pastParticipants:
+          title: Participantes
+          type: array
+          description: Carrega uma lista de grupos e seus participantes.
+          items:
+            type: object
+            required:
+              - groupJid
+              - pastParticipants
+            properties:
+              groupJid:
+                title: Group Jid
+                type: string
+              pastParticipants:
+                title: Paricipants
+                type: array
+                items:
+                  type: object
+                  required:
+                    - userJid
+                    - leaveReason
+                    - leaveTs
+                  properties:
+                    userJid:
+                      title: User Jid
+                      type: string
+                    leaveReason:
+                      title: Leave Reason
+                      type: integer
+                      enum:
+                        - 0
+                        - 1
+                      description: >-
+                        Indica o estado do paticipante no grupo.
+                          * `0`: Incluso
+                          * `1`: Removido
+                    leaveTs:
+                      title: Liave Timestamp
+                      type: integer
+    SyncPushNames:
+      title: Push Name
+      type: object
+      required:
+        - syncType
+        - paushnames
+      properties:
+        syncType:
+          title: Sync Type
+          type: integer
+          enum:
+            - 4
+        paushnames:
+          title: Push Names
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - pushname
+            properties:
+              id:
+                title: ID
+                type: string
+                description: '`123@s.whatsapp.net`'
+              pushname:
+                title: Push Name
+                type: string
+    HistorySyncConversation:
+      title: History Sync - Conversation
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - history.sync
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          allOf:
+            - $ref: '#/components/schemas/SyncConversations'
+    HistorySyncNonBlockingData:
+      title: History Sync - Non Blocking Data
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - history.sync
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          allOf:
+            - $ref: '#/components/schemas/SyncDataNonBlockingData'
+    HistorySyncPushName:
+      title: History Sync - Push Name
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - history.sync
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          allOf:
+            - $ref: '#/components/schemas/SyncPushNames'
+    HistorySyncStatus:
+      title: History Sync - Status
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - history.sync
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          allOf:
+            - $ref: '#/components/schemas/SyncStatus'
+    IdentityChange:
+      title: Identity Change
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - identity.change
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - jid
+            - timestamp
+            - inplicit
+          properties:
+            jid:
+              title: Jid
+              type: string
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            implicit:
+              title: Implicit
+              type: boolean
+    KeepAliveRestored:
+      title: Keep Alive - Restored
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - keep.alive:restored
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - type
+            - timestamp
+          properties:
+            type:
+              title: Type
+              type: string
+              enum:
+                - restored
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+    KeepAliveTimeout:
+      title: Keep Alive - Timeout
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - keep.alive:timeout
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - type
+            - timestamp
+          properties:
+            type:
+              title: Type
+              type: string
+              enum:
+                - timeout
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+    LabelAssociationChat:
+      title: Label Association - Chat
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - label.association:chat
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - jid
+            - timestamp
+            - labeID
+            - action
+          properties:
+            jid:
+              title: Jid
+              type: string
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            labeID:
+              title: Label ID
+              type: string
+              description: Uma string numérica
+            action:
+              title: Action
+              type: object
+              required:
+                - labeled
+              properties:
+                labeled:
+                  title: Label Ed
+                  type: boolean
+            fromFullSync:
+              title: From Full Sync
+              type: boolean
+    LabelAssociationMessage:
+      title: Label Association - Message
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - label.association:chat
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - jid
+            - timestamp
+            - labelID
+            - messageID
+            - action
+          properties:
+            jid:
+              title: Jid
+              type: string
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            labelID:
+              title: Label ID
+              type: string
+              description: Uma string numérica
+            messageID:
+              title: Message ID
+              type: string
+            action:
+              title: Action
+              type: object
+              required:
+                - labeled
+              properties:
+                labeled:
+                  title: Label Ed
+                  type: boolean
+            fromFullSync:
+              title: From Full Sync
+              type: boolean
+    LabelAssociationEdit:
+      title: Label Association - Edit
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - label.association:chat
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - timestamp
+            - labelID
+            - action
+          properties:
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            labelID:
+              title: Label ID
+              type: string
+              description: Uma string numérica
+            action:
+              title: Action
+              type: object
+              required:
+                - name
+                - color
+                - deleted
+              properties:
+                name:
+                  title: Name
+                  type: string
+                color:
+                  title: Color
+                  type: integer
+                deleted:
+                  title: Deleted
+                  type: boolean
+            fromFullSync:
+              title: From Full Sync
+              type: boolean
+    LogOut:
+      title: Log Out
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - log.out
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - onConnect
+            - reason
+            - description
+          properties:
+            onConnect:
+              title: On Connect
+              type: boolean
+            reason:
+              title: Reason
+              type: integer
+              enum:
+                - 401
+            description:
+              title: Description
+              type: string
+              enum:
+                - logged out for unknown reason
+    MarkChatRead:
+      title: Mark Chat - Read
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - mark.chat:read
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - jid
+            - timestamp
+            - action
+          properties:
+            jid:
+              title: Jid
+              type: string
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            action:
+              title: Action
+              type: object
+              required:
+                - read
+                - messageRange
+              properties:
+                read:
+                  title: Read
+                  type: boolean
+                messageRange:
+                  title: Message Range
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: true
+    MediaRetry:
+      title: Media Retry
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - media.retry
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          additionalProperties: true
+    MediaRetryError:
+      title: Media Retry - Error
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - media.retry:error
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          additionalProperties: true
+    MessageStart:
+      title: Message Start
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - message.start
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - chatJID
+            - senderJID
+            - isfromme
+            - messageID
+            - timestamp
+            - action
+          properties:
+            chatJID:
+              title: Chat JID
+              type: string
+            senderJID:
+              title: Sender JID
+              type: string
+            messageID:
+              title: Message ID
+              type: string
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            action:
+              title: Action
+              required:
+                - starred
+              properties:
+                starred:
+                  title: Starred
+                  type: boolean
+            fromFullSync:
+              title: From Full Sync
+              type: boolean
+    MessageUpdate:
+      title: Messge Update
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - message.update
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - chat
+            - sender
+            - isFromMe
+            - isGroup
+            - messageids
+            - timestamp
+            - type
+          properties:
+            chat:
+              title: Chat
+              type: string
+            sender:
+              title: Sender
+              type: string
+            isFromMe:
+              title: Is From Me
+              type: boolean
+            isGroup:
+              title: Is Group
+              type: boolean
+            broadcastListOwner:
+              title: Broadcast List Owner
+              type: string
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            type:
+              title: Type
+              type: string
+              enum:
+                - delivery-ack
+                - sender
+                - retry
+                - read
+                - read-self
+                - played
+                - played-self
+    InfoMeta:
+      title: Info Meta
+      type: object
+      required:
+        - chat
+        - sender
+        - isFromme
+        - isGroup
+        - id
+        - type
+        - pushName
+        - timestamp
+        - mediaType
+        - multicast
+      properties:
+        chat:
+          title: Chat
+          type: string
+        sender:
+          title: Sender
+          type: string
+        isFromme:
+          title: Is From Me
+          type: boolean
+        isGroup:
+          title: Is Group
+          type: boolean
+        broadcastlistowner:
+          title: Broadcast List Owner
+          type: string
+        id:
+          title: Id
+          type: string
+        serverid:
+          title: Server Id
+          type: integer
+        type:
+          title: Type
+          type: string
+        pushName:
+          title: Push Name
+          type: string
+        timestamp:
+          title: Timestamp
+          type: string
+          format: date-time
+        category:
+          title: Category
+          type: string
+        multicast:
+          title: Multicast
+          type: string
+        mediaType:
+          title: Media Type
+          type: string
+        edit:
+          title: Edit
+          type: string
+        devideSentMeta:
+          title: Device Sent Meta
+          type: object
+          additionalProperties: true
+    NewMessage:
+      title: New Message
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - new.message
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - info
+            - message
+            - isEphemeral
+            - isViewOnce
+            - isViewOncev2
+            - isdocumentWithCaption
+            - isEdit
+          properties:
+            info:
+              allOf:
+                - $ref: '#/components/schemas/InfoMeta'
+            message:
+              title: Content
+              type: object
+              required:
+                - contentType
+                - content
+              properties:
+                contentType:
+                  title: Content Type
+                  type: string
+                content:
+                  title: Content
+                  type: object
+                  additionalProperties: true
+            isEphemeral:
+              title: Is Ephemeral
+              type: boolean
+            isViewOnce:
+              title: Is View Once
+              type: boolean
+            isViewOncev2:
+              title: Is View Onve V2
+              type: boolean
+            isDocumentWithCaption:
+              title: Is Document With Caption
+              type: boolean
+            isEdit:
+              title: Is Edit
+              type: boolean
+            sourceWebMsg:
+              title: Source Web Msg
+              type: object
+              additionalProperties: true
+            unavailAblerequestID:
+              title: Unavailable Request ID
+              type: string
+            retrycount:
+              title: Retry Count
+              type: integer
+    OfflineSyncCompleted:
+      title: Offi Line Sync - Completed
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - offline.sync:completed
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - count
+          properties:
+            count:
+              title: Count
+              type: integer
+    OfflineSyncPreview:
+      title: Offi Line Sync - Preview
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - offline.sync:preview
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - total
+            - appDataChanges
+            - messages
+            - receipts
+          properties:
+            total:
+              title: Count
+              type: integer
+            appDataChanges:
+              title: App Data Changes
+              type: integer
+            notifications:
+              title: Notifications
+              type: integer
+            receipts:
+              title: Receipts
+              type: integer
+    DeviceParing:
+      title: Pair Error
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - device.paring
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - type
+            - id
+          properties:
+            type:
+              title: Type
+              type: string
+              enum:
+                - success
+                - error
+              description: |
+                Tipos de emparelhamento:
+                  * `success`: Indica que o emparelhamento foi concluído com êxito. Este estado é alcançado após a leitura correta do código QR pelo telefone e a conclusão bem-sucedida do handshake entre os dispositivos. Um emparelhamento bem-sucedido estabelece uma conexão segura e autorizada, permitindo a comunicação futura entre os dispositivos.
+                  * `error`: Significa que ocorreu um problema durante o processo de emparelhamento, impedindo a conclusão bem-sucedida da conexão. Esse estado pode ser resultado de vários fatores, como problemas de conectividade, erros de leitura do código QR, falhas na autenticação ou outros problemas técnicos. A presença de um erro exige uma investigação adicional para identificar e resolver a causa subjacente, possibilitando novas tentativas de emparelhamento.
+            id:
+              title: ID
+              type: string
+            businessName:
+              title: Business Name
+              type: string
+            platform:
+              title: Platform
+              type: string
+            error:
+              title: Error
+              type: string
+    PresenceUpdate:
+      title: Presence Update
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - presence.update
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - from
+            - unavailable
+            - lastSeen
+          properties:
+            from:
+              title: From
+              type: string
+              description: Identificador do usuário cuja presença foi atualizada, geralmente no formato `123@s.whatsapp.net`.
+            unavailable:
+              title: Unavailable
+              type: boolean
+              description: Um valor booleano que indica se o usuário está offline (`true`) ou não. Se `false`, presume-se que o usuário esteja online.
+            lastSeen:
+              title: Last Seen
+              type: string
+              format: date-time
+              description: A data e hora da última vez que o usuário esteve online. Este valor pode estar ausente ou ser zero se o usuário optou por ocultar suas informações de "visto pela última vez" nas configurações de privacidade.
+    PrivacySettings:
+      title: Privacy Settings
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - privacy.settings
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Date
+          type: object
+          required:
+            - type
+            - activated
+          properties:
+            type:
+              title: Type
+              type: string
+              enum:
+                - groupAddChanged
+                - lastSeenChanged
+                - statusChanged
+                - profileChanged
+                - readReceiptsChanged
+                - onlineChanged
+                - callAddChanged
+            activated:
+              title: Activated
+              type: boolean
+    ProfilePicture:
+      title: Profile Picture
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - profile.picture
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - jid
+            - author
+            - timestamp
+            - remove
+            - pictureID
+            - pictureInfo
+          properties:
+            jid:
+              title: Jid
+              type: string
+            author:
+              title: Author
+              type: string
+            pictureID:
+              title: Picture ID
+              type: string
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+            remove:
+              title: Remove
+              type: boolean
+            pictureInfo:
+              title: Piciture Info
+              type: object
+              required:
+                - url
+                - id
+                - type
+              properties:
+                url:
+                  title: URL
+                  type: string
+                id:
+                  title: ID
+                  type: string
+                type:
+                  title: Type
+                  type: string
+                direct_path:
+                  title: Direct Path
+                  type: string
+    ProfilePushName:
+      title: Profile Push Name
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - profile.pushName
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - jid
+            - oldPushName
+            - newPushName
+            - messageID
+          properties:
+            jid:
+              title: JID
+              type: string
+            oldPushName:
+              title: Old Push Name
+              type: string
+            newPushName:
+              title: New Push Name
+              type: string
+            messageID:
+              title: Message ID
+              type: string
+    ProfilePushNameBusiness:
+      title: Profile Push Name - Business
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - profile.pushName
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - jid
+            - oldBusinessName
+            - newBusinessName
+            - messageID
+          properties:
+            jid:
+              title: JID
+              type: string
+            oldBusinessName:
+              title: Old Push Name
+              type: string
+            newBusinessName:
+              title: New Push Name
+              type: string
+            messageID:
+              title: Message ID
+              type: string
+    ProfilePushNameSelf:
+      title: Profile Push Name -Self
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - profile.pushName
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - timestamp
+            - action
+          properties:
+            timestamp:
+              title: Timestamp
+              type: string
+            action:
+              title: Action
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  title: Name
+                  type: string
+            fromFullSync:
+              title: From Full Sync
+              type: boolean
+    PinnedChat:
+      title: Pinned Chat
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - pinned.chat
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - jid
+            - timestamp
+            - action
+          properties:
+            jid:
+              title: JID
+              type: string
+            timestamp:
+              title: Timestamp
+              type: string
+            action:
+              title: Action
+              type: object
+              required:
+                - pinned
+              properties:
+                pinned:
+                  title: Pinned
+                  type: boolean
+            fromFullSync:
+              title: From Full Sync
+              type: boolean
+    QrCodeUpdate:
+      title: QrCode Update
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - qrcode.update
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - code
+            - base64
+            - connection
+          properties:
+            code:
+              title: Code
+              type: string
+            base64:
+              title: Base64
+              type: string
+            connection:
+              title: Connection
+              type: string
+              enum:
+                - connecting
+    ConnectionStream:
+      title: Stream Error
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - connection.stream
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - code
+            - type
+          properties:
+            type:
+              title: Type
+              type: string
+              enum:
+                - error
+                - replaced
+            code:
+              title: Code
+              type: string
+            info:
+              title: Info
+              type: object
+              additionalProperties: true
+    TemporaryBan:
+      title: Temporary Ban
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - temporary.ban
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - code
+            - expire
+            - message
+          properties:
+            code:
+              title: Code
+              type: integer
+              enum:
+                - 402
+            expire:
+              title: Expire
+              type: string
+              format: date-time
+            message:
+              title: Message
+              type: string
+    UndecryptableMessage:
+      title: Undecryptable Messagae
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - undecryptable.message
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - info
+            - isUnavailable
+            - decryptFailMode
+          properties:
+            info:
+              allOf:
+                - $ref: '#/components/schemas/InfoMeta'
+            isUnavailable:
+              title: Is Unavailable
+              type: boolean
+            decryptFailMode:
+              title: Decrypt Fail Mode
+              type: string
+    UnknownCall:
+      title: Unknowm Call
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - unknown.call
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - node
+          properties:
+            node:
+              title: Node
+              type: object
+              additionalProperties: true
+    WhatsAppConnected:
+      title: WhatsApp Connected
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - whatsapp.connected
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - status
+            - statusReason
+            - message
+            - timestamp
+          properties:
+            status:
+              title: Status
+              type: string
+              enum:
+                - open
+            statusReason:
+              title: Status Reason
+              type: integer
+              enum:
+                - 200
+            message:
+              title: Message
+              type: string
+              enum:
+                - connected successfully
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+    WebsocketDisconnected:
+      title: Websocket Disconnected
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - whatsapp.connected
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - status
+            - statusReason
+            - message
+            - timestamp
+          properties:
+            status:
+              title: Status
+              type: string
+              enum:
+                - open
+                - close
+            statusReason:
+              title: Status Reason
+              type: integer
+            timestamp:
+              title: Timestamp
+              type: string
+              format: date-time
+    SendMessage:
+      title: Send Message
+      type: object
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Event
+          type: string
+          enum:
+            - send.message
+        instance:
+          allOf:
+            - $ref: '#/components/schemas/Instance'
+        data:
+          title: Data
+          type: object
+          required:
+            - sent
+            - message
+            - error
+          properties:
+            sent:
+              title: Sent
+              type: object
+              required:
+                - messageID
+                - timestamp
+              properties:
+                messageID:
+                  title: Message ID
+                  type: string
+                timestamp:
+                  title: Timestamp
+                  type: string
+                  format: date-time
+                message:
+                  title: Message
+                  type: object
+                  properties:
+                    contentType:
+                      title: Content Type
+                      type: string
+                    content:
+                      title: Content
+                      type: object
+                      additionalProperties: true
+            error:
+              title: Error
+              type: object
+              required:
+                - isError
+              properties:
+                isError:
+                  title: IsError
+                  type: boolean
+                description:
+                  title: Description
+                  type: string
+
+tags:
+  - name: Alterações
+  - name: Banimento
+  - name: Chamada
+    description: |
+      A implementação de lógicas apropriadas para responder a estes eventos de forma a maximizar a eficiência da comunicação e a satisfação do usuário durante as chamadas via WhatsApp.
+  - name: Chat
+  - name: Conexão
+  - name: Contato
+  - name: Dispositivo
+  - name: Estado do App
+    description: |
+      Desenvolvedores devem considerar a implementação de tratamentos específicos para estes eventos a fim de atualizar a interface do usuário de maneira apropriada, refletindo as mudanças de estado de notificações de bate-papo em tempo real. Isso é crucial para manter a sincronia entre dispositivos e garantir uma experiência de usuário coesa e intuitiva.
+  - name: Falha na Conexão
+    description: |
+      Desenvolvedores devem implementar mecanismos de tratamento para este evento, como tentativas de reconexão com políticas de backoff exponencial, notificações ao usuário sobre problemas de conectividade, ou registros de erro para diagnóstico. A gestão adequada deste evento é crucial para assegurar a resiliência e a confiabilidade da aplicação em cenários de interrupções de conexão.
+  - name: Grupo
+  - name: Label Associado
+  - name: Mensagem
+  - name: Manter Online
+  - name: Perfil
+  - name: Sincronização
+  - name: Sincronização Histórica
+  - name: Tentativa de Mídia
+  # - name: instance
+  #   x-displayName: Instance
+  #   description: |
+  #     <SchemaDefinition schemaRef="#/components/schemas/Instance" />
+  # - name: whatsapp
+  #   x-displayName: Whatsapp
+  #   description: |
+  #     <SchemaDefinition schemaRef="#/components/schemas/WhatsApp" />
+  # - name: keyMessage
+  #   x-displayName: KeyMessage
+  #   description: |
+  #     <SchemaDefinition schemaRef="#/components/schemas/KeyMessage" />
+  # - name: appState
+  #   x-displayName: AppState
+  #   description: |
+  #     <SchemaDefinition schemaRef="#/components/schemas/AppState" />
+  # - name: appStateSyncComplete
+  #   x-displayName: AppStateSyncComplete
+  #   description: |
+  #     <SchemaDefinition schemaRef="#/components/schemas/AppStateSyncComplete" />
+  # - name: archivrChat
+  #   x-displayName: ArchiveChat
+  #   description: |
+  #     <SchemaDefinition schemaRef="#/components/schemas/ArchiveChat" />
+
+x-tagGroups:
+  - name: Comunicação e Mensagens
+    tags:
+      - Chamada
+      - Chat
+      - Mensagem
+      - Grupo
+  - name: Gerenciamento de Usuário e Dispositivo
+    tags:
+      - Contato
+      - Dispositivo
+      - Perfil
+  - name: Conectividade e Sincronização
+    tags:
+      - Conexão
+      - Falha na Conexão
+      - Sincronização
+      - Sincronização Histórica
+  - name: Eventos e Notificações
+    tags:
+      - Estado do App
+      - Alterações
+      - Banimento
+      - Label associado
+  - name: Suporte e Diagnóstico
+    tags:
+      - Manter Online
+      - Tentativa de Mídia
+  # - name: Modelos
+  #   tags:
+  #     - whatsapp
+  #     - instance
+  #     - keyMessage
+
+x-webhooks:
+  app_state:
+    post:
+      operationId: appState
+      summary: Estado do App
+      description: |
+        ### `app.state`
+
+        Este evento é acionado quando novos dados são recebidos como parte da sincronização do estado do aplicativo. Ele fornece informações detalhadas sobre as mudanças específicas que ocorreram no estado do aplicativo, como atualizações de contato ou configurações de mudo de chat.
+
+        Embora este evento ofereça dados detalhados, é recomendável utilizar eventos de nível superior que sejam mais específicos às ações do usuário ou às mudanças no aplicativo, como `contacts.upsert` para inserções ou atualizações de contatos, e `chat.mute` para alterações nas configurações de mudo de um chat.
+
+        Exemplos de dados de evento:
+
+        - Quando um usuário é colocado em mudo:
+          ```json
+          {
+            "event": "app.state",
+            "instance": "...",
+            "data": {
+              "index": [
+                "userStatusMute",
+                "123@s.whatsapp.net"
+              ],
+              "timestamp": 1707487985077,
+              "userstatusmuteaction": {
+                "muted": true
+              }
+            }
+          }
+          ```
+
+          Neste exemplo, `userStatusMute` indica que a ação se refere ao mudo de status do usuário `123@s.whatsapp.net`, com o `timestamp` representando o momento da ação. O campo `userstatusmuteaction` confirma que o usuário foi colocado em mudo.
+
+        - Quando um contato é atualizado:
+          ```json
+          {
+            "event": "app.state",
+            "instance": "...",
+            "data": {
+              "index": [
+                "contact",
+                "123@s.whatsapp.net"
+              ],
+              "timestamp": 1708974396278,
+              "contactaction": {
+                "fullName": "Lora",
+                "lidJid": "456789@lid"
+              }
+            }
+          }
+          ```
+
+          Aqui, `contact` indica que a atualização se refere a um contato, especificamente `123@s.whatsapp.net`. O `timestamp` fornece o momento da atualização, e `contactaction` detalha as mudanças no contato, como o nome completo sendo atualizado para "Lora".
+
+          Esses exemplos ilustram como os dados do evento `app.state` podem ser usados para entender as mudanças específicas no estado do aplicativo. No entanto, para a maioria das aplicações, eventos de nível superior fornecerão uma interface mais simples e direta para responder a mudanças no estado do aplicativo.
+      tags:
+        - Estado do App
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AppState'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  app_state_sync_complete:
+    post:
+      operationId: appState-syncComplete
+      summary: Estado do App - Sincronização completa
+      description: |
+        ### `app.state:sync-complete`
+
+        Este evento é acionado durante o processo de ressincronização do estado do aplicativo, indicando que o aplicativo está atualizando seu estado local para refletir as mudanças mais recentes no servidor ou na nuvem. A ressincronização pode ocorrer por vários motivos, como a reconexão após uma desconexão de rede, a sincronização inicial ao iniciar o aplicativo, ou como resultado de uma solicitação explícita para atualizar os dados.
+
+        O evento de ressincronização é um indicativo importante de que o aplicativo está em processo de atualização de suas informações internas, o que pode incluir contatos, conversas, configurações de usuário, e outros dados relevantes para a operação do aplicativo. Durante esse processo, o aplicativo pode temporariamente apresentar informações desatualizadas até que a sincronização seja concluída.
+
+        Desenvolvedores podem utilizar este evento para implementar lógicas específicas, como exibir indicadores de carregamento para o usuário ou preparar o aplicativo para processar e exibir os novos dados assim que estiverem disponíveis. É uma prática recomendada garantir que o aplicativo possa lidar com esses eventos de forma suave, mantendo a experiência do usuário consistente e responsiva.
+
+      tags:
+        - Estado do App
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AppStateSyncComplete'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  archive_chat:
+    post:
+      operationId: archiveChat
+      summary: Arquivamento
+      description: |
+        ### `archive.chat`
+
+        Este evento é acionado sempre que um bate-papo é arquivado ou desarquivado em outro dispositivo que está sincronizado com a mesma conta. Isso permite que os aplicativos mantenham a sincronização do estado de arquivamento dos bate-papos entre múltiplos dispositivos, garantindo uma experiência de usuário consistente.
+
+        O arquivamento de um bate-papo remove-o da lista principal de bate-papos até que uma nova mensagem seja recebida, enquanto o desarquivamento retorna o bate-papo para a lista principal. Este evento é útil para atualizar a interface do usuário em tempo real, refletindo as alterações feitas em outros dispositivos.
+      tags:
+        - Chat
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ArchiveChat'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  block_list:
+    post:
+      operationId: blockList
+      summary: Lista de Bloqueio
+      description: |
+        ### `block.list`
+
+        Este evento é acionado sempre que há uma mudança na lista de usuários bloqueados do usuário. Isso inclui tanto o ato de bloquear um novo usuário quanto o de desbloquear um usuário previamente bloqueado. A alteração na lista de usuários bloqueados pode afetar a forma como as mensagens são recebidas e enviadas, as notificações são exibidas e como os usuários interagem entre si dentro do aplicativo.
+
+        A atualização da lista de usuários bloqueados é fundamental para manter a privacidade e a segurança do usuário, garantindo que as restrições impostas a certos usuários sejam efetivamente aplicadas em todas as instâncias do aplicativo. Os desenvolvedores podem utilizar este evento para acionar atualizações na interface do usuário, reforçar políticas de privacidade ou desencadear outras ações necessárias em resposta a alterações na lista de bloqueios.
+      tags:
+        - Chat
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BlockList'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  call_accept:
+    post:
+      operationId: callAccept
+      summary: Aceita
+      description: |
+        ### `call.accept`
+
+        Este evento é acionado no exato momento em que uma chamada feita através do WhatsApp é aceita pelo destinatário. Ele serve como uma notificação imediata que informa tanto o sistema quanto o usuário que a conexão de chamada foi estabelecida com sucesso, permitindo que a comunicação de voz ou vídeo prossiga.
+
+        A captura deste evento é crucial para aplicativos que necessitam iniciar ou preparar recursos assim que a chamada é aceita, como habilitar gravações, ativar indicadores de status de chamada em tempo real ou mesmo para análises de dados de uso de chamadas. Além disso, pode ser utilizado para melhorar a experiência do usuário, fornecendo feedback visual ou auditivo que confirme o estabelecimento da chamada.
+      tags:
+        - Chamada
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CallAccept'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  call_offer:
+    post:
+      operationId: callOffer
+      summary: Recebida
+      description: |
+        ### `call.accept`
+
+        Este evento é acionado quando o usuário recebe uma chamada entrante através do WhatsApp. Ele fornece uma notificação em tempo real sobre chamadas recebidas, permitindo que o aplicativo responda adequadamente, seja atualizando a interface do usuário, registrando o evento para fins de análise ou desencadeando notificações personalizadas.
+
+        Ao receber esse evento, o aplicativo pode exibir informações sobre a chamada, como o identificador do chamador e o horário da chamada, melhorando a experiência do usuário ao fornecer contexto imediato sobre a chamada recebida. Além disso, esse evento pode ser utilizado para integrar funcionalidades de registro de chamadas ou para ativar processos de negócios específicos relacionados a chamadas recebidas no WhatsApp.
+      tags:
+        - Chamada
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CallOffer'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  call_offer_notice:
+    post:
+      operationId: callOffer-notice
+      summary: Recebida em grupos
+      description: |
+        ### `call.offer:notice`
+
+        Este evento é especificamente acionado quando o usuário recebe uma notificação de uma chamada no WhatsApp, sendo particularmente relevante para chamadas em grupo. Diferentemente do evento `call.offer`, que é utilizado para chamadas individuais (1:1), este evento sinaliza que o usuário foi convidado a participar de uma chamada em grupo.
+
+        A emissão deste evento permite que aplicativos notifiquem os usuários de maneira eficaz sobre chamadas em grupo entrantes, possibilitando uma ação rápida, seja para se juntar à chamada ou para sinalizar a indisponibilidade. Este evento pode ser utilizado para atualizar a interface do usuário com detalhes da chamada em grupo, incluindo informações sobre os participantes, ou para registrar a ocorrência da chamada para análises futuras.
+      tags:
+        - Chamada
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CallOfferNotice'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  call_relay_latency:
+    post:
+      operationId: callRealy-latency
+      summary: Entrante
+      description: |
+        ### `call.realy:latency`
+
+        Este evento é emitido imediatamente após o usuário receber uma chamada no WhatsApp. Ele está associado ao som de alerta que é tocado para indicar a presença de uma chamada entrante. Esse evento serve como uma notificação inicial para alertar o usuário e o aplicativo sobre uma chamada recebida, permitindo que ações apropriadas sejam tomadas em resposta, como exibir uma interface de chamada ou registrar o evento para análises futuras.
+
+        O reconhecimento deste evento pode ser crucial para aplicativos que necessitam de uma resposta imediata às chamadas entrantes, possibilitando uma experiência de usuário mais interativa e responsiva. Além disso, pode ser usado para ativar funcionalidades específicas do aplicativo, como gravação de chamadas ou estatísticas de chamadas recebidas.
+      tags:
+        - Chamada
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CallRelayLatency'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  call_terminate:
+    post:
+      operationId: callTerminate
+      summary: Terminada
+      description: |
+        ### `call.terminate`
+
+        Este evento é acionado no momento em que a outra parte encerra uma chamada no WhatsApp. Ele serve como um indicador imediato do término da chamada, permitindo que o aplicativo atualize a interface do usuário para refletir o fim da comunicação e execute quaisquer ações de encerramento necessárias, como salvar detalhes da chamada, liberar recursos de mídia ou notificar o usuário sobre o término da chamada.
+
+        O tratamento adequado desse evento é crucial para garantir uma experiência de usuário fluida e para manter registros precisos de atividades de chamadas dentro do aplicativo. Também pode ser usado para acionar análises pós-chamada, como a coleta de feedback do usuário ou a análise da qualidade da chamada, contribuindo para a melhoria contínua dos serviços oferecidos.
+      tags:
+        - Chamada
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CallTerminate'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  chat_clear:
+    post:
+      operationId: chatClear
+      summary: Limpo
+      description: |
+        ### `chat.clear`
+
+        Este evento é acionado especificamente quando um bate-papo é apagado em outro dispositivo que está sincronizado com a mesma conta do usuário. Este evento é distinto de `chat.delete`, que se refere à ação de deletar um bate-papo diretamente no dispositivo do usuário. O propósito deste evento é informar o aplicativo sobre alterações no estado dos bate-papos que ocorrem em dispositivos vinculados, permitindo uma sincronização eficaz e uma experiência de usuário consistente em todos os dispositivos.
+
+        A detecção e o manejo adequado deste evento são importantes para assegurar que a interface do usuário e o estado do aplicativo reflitam corretamente as mudanças nos bate-papos, independentemente de onde a ação de apagar foi iniciada. Isso é particularmente relevante em aplicações que oferecem funcionalidades multiplataforma ou multi-dispositivos, onde a consistência de dados e a experiência do usuário são críticas.
+
+        Desenvolvedores devem implementar lógicas específicas para lidar com este evento, a fim de atualizar a lista de bate-papos e manter a sincronização entre dispositivos, garantindo assim que ações realizadas em um dispositivo sejam refletidas em todos os outros.
+      tags:
+        - Chat
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/forma-data:
+            schema:
+              $ref: '#/components/schemas/ChatClear'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  chat_delete:
+    post:
+      operationId: chatDelete
+      summary: Deletado
+      description: |
+        ### `chat.delete`
+
+        Este evento é acionado especificamente quando um bate-papo é apagado em outro dispositivo que está sincronizado com a mesma conta do usuário. Este evento é distinto de `chat.delete`, que se refere à ação de deletar um bate-papo diretamente no dispositivo do usuário. O propósito deste evento é informar o aplicativo sobre alterações no estado dos bate-papos que ocorrem em dispositivos vinculados, permitindo uma sincronização eficaz e uma experiência de usuário consistente em todos os dispositivos.
+
+        A detecção e o manejo adequado deste evento são importantes para assegurar que a interface do usuário e o estado do aplicativo reflitam corretamente as mudanças nos bate-papos, independentemente de onde a ação de apagar foi iniciada. Isso é particularmente relevante em aplicações que oferecem funcionalidades multiplataforma ou multi-dispositivos, onde a consistência de dados e a experiência do usuário são críticas.
+
+        Desenvolvedores devem implementar lógicas específicas para lidar com este evento, a fim de atualizar a lista de bate-papos e manter a sincronização entre dispositivos, garantindo assim que ações realizadas em um dispositivo sejam refletidas em todos os outros.
+      tags:
+        - Chat
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/forma-data:
+            schema:
+              $ref: '#/components/schemas/ChatDelete'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  chat_muted:
+    post:
+      operationId: chatMuted
+      summary: Silenciado
+      description: |
+        ### `chat.mute`
+
+        Este evento é gerado sempre que um bate-papo é silenciado ou reativado (des-silenciado) em um dispositivo diferente do do usuário atual. Esse mecanismo de sincronização assegura que as preferências do usuário em relação à notificação de mensagens sejam consistentemente aplicadas em todos os dispositivos vinculados à mesma conta. 
+
+        O silenciamento de um bate-papo impede que notificações sonoras ou visuais sejam disparadas para novas mensagens, proporcionando ao usuário maior controle sobre a experiência de uso e a gestão de interrupções. A reativação de um bate-papo reverte essa configuração, permitindo novamente que notificações sejam recebidas.
+      tags:
+        - Chat
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/forma-data:
+            schema:
+              $ref: '#/components/schemas/ChatMute'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  chat_settings_archived:
+    post:
+      operationId: chatSettings-archived
+      summary: Configuração de Arquivamento
+      description: |
+        ### `chat.settings:archived`
+
+        Este evento é acionado quando o usuário altera a configuração "Manter chats arquivados" a partir de um dispositivo diferente. Essa configuração é essencial para determinar o comportamento dos chats arquivados, especialmente em relação à sua visibilidade na interface do usuário e à maneira como novas mensagens recebidas afetam seu status de arquivamento.
+
+        Quando essa configuração é ativada, os chats arquivados permanecem arquivados mesmo após o recebimento de novas mensagens, ajudando a manter a organização e a priorização dos chats ativos. Se desativada, qualquer chat arquivado que receba uma nova mensagem será automaticamente deslocado de volta para a lista principal de chats, aumentando a visibilidade dessa nova interação.
+
+        O tratamento desse evento permite que aplicativos sincronizem essa preferência em todos os dispositivos do usuário, garantindo uma experiência consistente e personalizada de acordo com as escolhas do usuário. Desenvolvedores devem considerar atualizar a interface do usuário e os comportamentos relacionados aos chats arquivados em resposta a esse evento, para refletir com precisão as intenções do usuário em todos os seus dispositivos.
+      tags:
+        - Chat
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/forma-data:
+            schema:
+              $ref: '#/components/schemas/ChatSettingArchived'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  client_outdated:
+    post:
+      operationId: clientOutdated
+      summary: Cliente Desatualizado
+      description: |
+        ### `client.outdated`
+
+        Este evento é acionado quando uma tentativa de conexão com o servidor WhatsApp é rejeitada. A rejeição de uma conexão pode ocorrer por uma variedade de razões, incluindo, mas não se limitando a, problemas de autenticação, falhas na rede, ou o servidor estar inacessível devido a manutenções ou sobrecargas.
+
+        Quando esse evento é emitido, indica que o dispositivo ou aplicação cliente não conseguiu estabelecer uma comunicação estável com o servidor WhatsApp, o que pode afetar a capacidade de enviar ou receber mensagens e outras funcionalidades dependentes da conexão ativa com o servidor.
+
+        Desenvolvedores devem implementar mecanismos de tratamento para este evento, como tentativas de reconexão com políticas de backoff exponencial, notificações ao usuário sobre problemas de conectividade, ou registros de erro para diagnóstico. A gestão adequada deste evento é crucial para assegurar a resiliência e a confiabilidade da aplicação em cenários de interrupções de conexão.
+      tags:
+        - Falha na Conexão
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientOutdated'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  connect_failure:
+    post:
+      operationId: connectFailure
+      summary: Falha desconhecida
+      description: |
+        ### `connect.failure`
+
+        Este evento é gerado quando o servidor do WhatsApp envia um nó `<failure>` para o cliente com um motivo não especificado ou desconhecido. Isso pode ocorrer em situações atípicas, onde o servidor encontra um erro que não se enquadra nas categorias de erros previamente definidas e tratadas de maneira padrão.
+
+        Os erros com motivos conhecidos são normalmente processados internamente pela aplicação e resultam na emissão de eventos específicos, tais como `logged.out` para deslogamentos inesperados ou `temporary.ban` para bans temporários. No entanto, quando um erro não se encaixa nessas categorias, o evento de `<failure>` com motivo desconhecido é utilizado para sinalizar essa ocorrência atípica.
+
+        Códigos de erro:
+          - `400`: Falha na conexão por motivo desconhecido.
+          - `401`: Desconectado devido à ativação em outro dispositivo.
+          - `402`: Conta temporariamente banida, geralmente devido ao uso não autorizado ou comportamento suspeito.
+          - `403`: O dispositivo principal foi desconectado, interrompendo a sessão secundária.
+          - `405`: Cliente desatualizado, exigindo atualização para a versão mais recente.
+          - `406`: Desconectado por motivo desconhecido.
+          - `409`: O agente do usuário cliente foi rejeitado pelo servidor.
+          - `413`: O token de autenticação criptográfica expirou, exigindo renovação.
+          - `414`: O token de autenticação criptográfica é inválido.
+          - `415`: Falha de conexão por motivo não especificado.
+          - `500`: Erro interno do servidor, indicando problemas no lado do serviço.
+          - `503`: Serviço indisponível, podendo ser temporário devido a manutenção ou sobrecarga do sistema.indisponível.
+      tags:
+        - Falha na Conexão
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConnectFailure'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  constact_upsert:
+    post:
+      operationId: contactUpsert
+      summary: Atualizado
+      description: |
+        ### `contact.upsert`
+         
+        Este evento é disparado sempre que uma modificação é feita em uma entrada na lista de contatos do usuário a partir de outro dispositivo vinculado à mesma conta. As alterações podem incluir adições, atualizações ou exclusões de contatos. Este mecanismo de sincronização garante que a lista de contatos permaneça consistente e atualizada em todos os dispositivos do usuário, refletindo as alterações em tempo real.
+
+        A sincronização de contatos entre dispositivos é fundamental para proporcionar uma experiência de usuário coesa e integrada, permitindo que o usuário tenha acesso à sua rede de contatos atualizada, independentemente do dispositivo que esteja utilizando. Além disso, o evento auxilia na manutenção de registros precisos de contatos, o que é especialmente importante para aplicações que dependem de informações de contato atualizadas para funcionalidades como envio de mensagens ou realização de chamadas.
+      tags:
+        - Contato
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Contact'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  delete_for_me:
+    post:
+      operationId: deleteFor-me
+      summary: Apagar para mim
+      description: |
+        ### `delete.for:me`
+
+        Este evento é acionado quando uma mensagem é excluída especificamente para o usuário atual, a partir de um dispositivo diferente vinculado à mesma conta. Este evento reflete a ação de exclusão de uma mensagem que ocorre em um dispositivo, garantindo que a mudança seja sincronizada e refletida em todos os outros dispositivos do usuário. É importante notar que essa exclusão é unilateral, afetando apenas a visibilidade da mensagem para o usuário que a excluiu, sem remover a mensagem para outros participantes da conversa.
+
+        A sincronização dessas ações de exclusão de mensagens entre dispositivos é crucial para manter uma experiência de usuário consistente e coesa, permitindo que o usuário gerencie suas mensagens de forma eficaz, independentemente do dispositivo que esteja utilizando. Além disso, essa funcionalidade suporta práticas de privacidade e organização pessoal, dando ao usuário controle sobre o conteúdo das suas conversas.
+      tags:
+        - Chat
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeleteForMe'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  group_info:
+    post:
+      operationId: groupUpdate
+      summary: Atulização de Grupos
+      description: |
+        ### `group.update`
+
+        Este evento é acionado sempre que ocorre uma alteração nos metadados de um grupo no WhatsApp. Os metadados de um grupo incluem, mas não se limitam a, seu nome, foto de perfil, descrição, configurações de privacidade e lista de administradores. Mudanças podem ser iniciadas por qualquer administrador do grupo e são sincronizadas em tempo real com todos os membros do grupo.
+
+        A atualização dos metadados do grupo é fundamental para a gestão e a dinâmica do grupo, refletindo mudanças importantes que podem afetar como os membros interagem dentro do grupo. Por exemplo, a alteração da foto de perfil do grupo pode ser usada para destacar um evento ou tema específico, enquanto mudanças na descrição do grupo podem servir para atualizar as regras ou o propósito do grupo.
+
+        Desenvolvedores devem implementar lógicas de tratamento para este evento de forma a atualizar a interface do usuário e o estado do aplicativo de maneira a refletir as mudanças nos metadados do grupo, garantindo que os membros do grupo tenham a visão mais atualizada e relevante do grupo e suas configurações.
+      tags:
+        - Grupo
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GroupUpdate'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  group_settings:
+    post:
+      operationId: groupUpdate-Settings
+      summary: Configurações de Grupos
+      description: |
+        ### `group.update:settings`
+
+        Este evento é acionado quando ocorrem alterações nas configurações de um grupo no WhatsApp. As alterações possíveis incluem:
+        - `locked`: Quando a configuração de grupo bloqueado é alterada, isso significa que somente os administradores do grupo poderão editar as informações do grupo, como nome, imagem e descrição.
+        - `announce`: Quando as configurações de chat do grupo são alteradas para o modo anúncio, apenas os administradores poderão enviar mensagens ao grupo, limitando os demais membros a apenas receber mensagens.
+        - `ephemeral`: Quando a configuração das mensagens de desaparecimento é alterada, as mensagens enviadas no chat do grupo serão automaticamente excluídas após um determinado período, aumentando a privacidade e a efemeridade das conversas.
+
+      tags:
+        - Grupo
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GroupUpdateSettings'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  group_participants_update:
+    post:
+      operationId: groupParticipants-update
+      summary: Atualização de Participantes do Grupo
+      description: |
+        ### `group.update:participants`
+
+        Este evento é acionado quando ocorrem mudanças significativas na lista de participantes de um grupo. As alterações são categorizadas em quatro tipos principais: `join`, `leave`, `promote` e `demote`. Cada tipo reflete uma ação específica relacionada aos participantes do grupo:
+
+        - `join`: Indica que novos usuários ingressaram no grupo ou foram adicionados por um administrador. Este evento é crucial para manter o controle de quem está no grupo.
+        - `leave`: Refere-se a usuários que saíram do grupo por vontade própria ou que foram removidos por um administrador. É importante para monitorar a dinâmica do grupo e manter a lista de participantes atualizada.
+        - `promote`: Ocorre quando um usuário é promovido a administrador do grupo, o que lhe confere novas permissões e responsabilidades dentro do grupo.
+        - `demote`: Significa que um administrador do grupo foi rebaixado a um participante comum, perdendo privilégios administrativos.
+
+      tags:
+        - Grupo
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GroupUpdateParticipants'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  hinstoy_sync_0-3-6:
+    post:
+      operationId: historySync-conversation
+      summary: Sincronização de Conversas Históricas
+      description: |
+        ### `history.sync`
+
+        Este endpoint é acionado quando o `client` recebe um blob contendo mensagens históricas de conversas. A sincronização histórica é um processo essencial para restaurar o histórico de mensagens de um usuário, especialmente ao reinstalar o aplicativo ou iniciar sessão em um novo dispositivo. O blob de mensagens históricas permite ao usuário acessar conversas passadas, mantendo a continuidade e a integridade do histórico de comunicação.
+
+        O processo envolve a descompactação e decodificação do blob para extrair as mensagens, que devem então ser adequadamente integradas ao histórico de conversas existente no dispositivo do usuário. Essa operação é crucial para garantir uma experiência de usuário coesa, permitindo a recuperação de informações importantes e a retomada de conversas anteriores sem perda de contexto.
+      tags:
+        - Sincronização Histórica
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HistorySyncConversation'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  history_sync_5:
+    post:
+      operationId: historySync-nonBlockingData
+      summary: Sincronização de Dados Não Bloqueantes
+      description: |
+        ### `history.sync`
+
+        Este endpoint é acionado quando o `client` recebe um blob de dados não bloqueantes durante o processo de sincronização histórica. Dados não bloqueantes referem-se a informações que podem ser processadas em segundo plano sem interferir na interação do usuário com o aplicativo, como informações de perfil, metadados de mídia, ou configurações de aplicativo.
+
+        A recepção desses dados permite que o aplicativo atualize e enriqueça a experiência do usuário sem causar atrasos ou bloqueios na interface do usuário, garantindo que o aplicativo permaneça responsivo enquanto processa grandes volumes de informações em segundo plano.
+
+        Este processo é parte crucial da otimização da performance do aplicativo durante a inicialização ou após a reinstalação, assegurando que os usuários tenham acesso imediato às funcionalidades principais do aplicativo enquanto os dados detalhados são sincronizados e aplicados de forma transparente.
+
+      tags:
+        - Sincronização Histórica
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HistorySyncNonBlockingData'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  history_sync_4:
+    post:
+      operationId: historySync-pushName
+      summary: Sincronização do Nome de Envio
+      description: |
+        ### `history.sync`
+
+        Este endpoint é acionado quando o `client` recebe um blob contendo o `pushName` durante a sincronização histórica. O `pushName` é o nome de exibição associado ao usuário no WhatsApp, usado principalmente em notificações push e para identificar o remetente em mensagens e chamadas. Este evento indica uma atualização ou sincronização do nome de exibição do usuário entre dispositivos vinculados à mesma conta.
+
+        A correta sincronização do `pushName` é essencial para manter a consistência da identidade do usuário em todos os dispositivos e garantir que as notificações e mensagens sejam exibidas com as informações corretas. Isso melhora a experiência do usuário, proporcionando clareza e reconhecimento em comunicações e notificações.
+      tags:
+        - Sincronização Histórica
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HistorySyncPushName'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  history_sync_1:
+    post:
+      operationId: historySync-status
+      summary: Sincronização de Status Broadcast
+      description: |
+        ### `history.sync`
+
+        Este endpoint é acionado quando o `client` recebe um blob contendo informações de status broadcast durante o processo de sincronização histórica. O status broadcast refere-se à funcionalidade que permite aos usuários compartilhar atualizações de status, sejam elas textos, fotos, vídeos ou GIFs, com os seus contatos no WhatsApp de forma temporária, geralmente desaparecendo após 24 horas.
+
+        A sincronização dessas informações de status é essencial para garantir que os usuários tenham acesso às atualizações de status mais recentes de seus contatos, especialmente após a reinstalação do aplicativo ou a troca de dispositivos. Isso permite uma experiência de usuário contínua e integrada, mantendo o usuário informado sobre as novidades em sua rede de contatos.
+      tags:
+        - Sincronização Histórica
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HistorySyncStatus'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  identity_change:
+    post:
+      operationId: identityChange
+      summary: Notificação de Alteração de Dispositivo
+      description: |
+        ### `identity.change`
+
+        Este endpoint é acionado quando é detectada uma mudança no dispositivo principal de outro usuário dentro do contexto de uma sessão multi-dispositivos. Uma alteração implícita refere-se a uma mudança que não é diretamente iniciada ou reconhecida pelo usuário afetado, mas que é inferida através da atividade de sessão de outro usuário vinculado à mesma conta.
+
+        Esse evento é particularmente relevante em cenários onde a segurança e a integridade da sessão são críticas, pois fornece uma indicação de que houve uma alteração significativa no ecossistema de dispositivos de um usuário. Aplicações podem utilizar essa informação para implementar lógicas de segurança adicionais, como solicitações de reautenticação ou notificações de segurança para o usuário afetado.
+
+        O tratamento adequado desse evento ajuda a manter a transparência sobre as alterações na configuração do dispositivo e reforça as práticas de segurança dentro do aplicativo.
+      tags:
+        - Alterações
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IdentityChange'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  keep_alive_restored:
+    post:
+      operationId: keepAlive-restored
+      summary: Conexão Restaurada
+      description: |
+        ### `keep.alive:restored`
+
+        Este evento é acionado quando as solicitações de ping **keepalive** são retomadas com sucesso após uma sequência de timeouts, indicados pelos eventos `keep.alive:timeout`. Isso indica que a conexão entre o cliente e os servidores web do WhatsApp foi efetivamente restabelecida, voltando a estar operacional após um período de inatividade ou instabilidade.
+
+        É crucial observar que este evento não será emitido se a conexão websocket for encerrada antes da restauração dos pings keepalive. Diante disso, é essencial que os clientes implementem estratégias de reconexão robustas para gerenciar desconexões inesperadas. Além disso, o monitoramento ativo dos eventos de timeout e de restauração do keepalive é fundamental para assegurar uma comunicação contínua e eficaz com os servidores do WhatsApp, evitando interrupções no serviço.
+
+      tags:
+        - Manter Online
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/KeepAliveRestored'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  keep_alive_timeout:
+    post:
+      operationId: keepAlive-timeout
+      summary: Tempo Limite de Keep Alive
+      description: |
+        ### `keep.alive:timeout`
+
+        Este evento é emitido quando ocorre um tempo limite (timeout) nas solicitações de ping keepalive com os servidores web do WhatsApp. Pings keepalive são mecanismos utilizados para verificar e manter a conexão ativa entre o cliente e o servidor, enviando periodicamente pequenas quantidades de dados para assegurar que a conexão está operacional.
+
+        O evento de tempo limite é acionado quando uma solicitação de ping keepalive não recebe resposta dentro de um período esperado, indicando uma possível interrupção na conexão. Nessas situações, pode ser que a conexão TCP existente esteja comprometida e não esteja mais ativa.
+
+        Embora atualmente não exista um mecanismo automático de recuperação para esses casos, é crucial que os clientes monitorizem esse evento e implementem estratégias de reconexão. Uma prática recomendada é forçar uma desconexão seguida de uma reconexão, para tentar restabelecer a comunicação de maneira eficiente.
+
+        A monitoração e o tratamento adequados desses eventos de timeout são essenciais para garantir a estabilidade e a confiabilidade da conexão com os servidores do WhatsApp, especialmente em ambientes que demandam alta disponibilidade e tempos de resposta rápidos.
+
+      tags:
+        - Manter Online
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/KeepAliveTimeout'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  label_association_chat:
+    post:
+      operationId: labelAssocioation-chat
+      summary: Associação de Etiqueta a Chat
+      description: |
+        ### `label.association:chat`
+
+        Este evento é acionado quando uma etiqueta é associada ou desassociada de uma conversa de chat. A associação de etiquetas permite categorizar e organizar conversas para facilitar a gestão e o acesso rápido a chats relevantes.
+
+        - `jid`: Identificador único da conversa de chat afetada pela associação de etiqueta.
+        - `timestamp`: Data e hora do evento de associação, fornecendo um registro temporal da ação.
+        - `labelid`: Identifica a etiqueta que está sendo associada ou desassociada da conversa. É uma string numérica que representa unicamente a etiqueta no sistema.
+        - `action`: Objeto que descreve a ação realizada, onde `labeled: true` indica que a etiqueta foi associada à conversa, e `labeled: false` indica que a etiqueta foi desassociada.
+        - `fromFullSync`: Um booleano que indica se a associação de etiqueta é resultado de uma sincronização completa do sistema, ajudando a diferenciar entre atualizações de rotina e ações diretas do usuário.
+      tags:
+        - Label Associado
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LabelAssociationChat'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  label_association_message:
+    post:
+      operationId: labelAssocioation-messge
+      summary: Associação de Etiqueta a Mensagem
+      description: |
+        ### `label.association:message`  
+
+        Este evento ocorre quando uma etiqueta é associada ou desassociada de uma mensagem específica dentro de um chat. A utilização de etiquetas em mensagens facilita a organização, classificação e recuperação de conteúdo significativo, permitindo uma gestão eficiente da comunicação.
+
+        Detalhes do evento:
+        - `jid`: Identifica o chat ao qual a mensagem pertence, usando um identificador único.
+        - `timestamp`: A data e hora em que a ação de associação da etiqueta foi realizada, proporcionando um contexto temporal.
+        - `labelid`: O identificador único da etiqueta aplicada ou removida da mensagem, representado como uma string numérica.
+        - `messageId`: O identificador único da mensagem que está sendo etiquetada ou desetiquetada.
+        - `action`: Especifica a natureza da associação de etiqueta, onde `labeled: true` indica que a etiqueta foi aplicada à mensagem, e `labeled: false` indica que a etiqueta foi removida.
+        - `fromFullSync`: Indica se a associação da etiqueta resultou de uma sincronização completa, ajudando a distinguir entre mudanças iniciadas pelo usuário e atualizações automáticas do sistema.
+      tags:
+        - Label Associado
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LabelAssociationMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  label_association_edit:
+    post:
+      operationId: labelAssocioation-edit
+      summary: Edição de Etiqueta Associada
+      description: |
+        ### `label.edit`
+
+        Este evento é disparado quando ocorre uma edição nas propriedades de uma etiqueta existente, como mudança de nome, cor ou mesmo a exclusão da etiqueta. Essas edições permitem uma personalização e organização mais efetivas das conversas e mensagens, adaptando-se às necessidades dinâmicas dos usuários.
+
+        Detalhes da edição:
+        - `timestamp`: Data e hora em que a edição da etiqueta foi realizada, fornecendo um registro temporal da alteração.
+        - `labelid`: Identificador único da etiqueta que está sendo editada, representado por uma string numérica.
+        - `action`: Contém os detalhes da edição realizada na etiqueta:
+          - `name`: Novo nome atribuído à etiqueta, refletindo sua função ou categoria.
+          - `color`: Valor numérico que representa a nova cor atribuída à etiqueta, melhorando a visualização e organização.
+          - `deleted`: Indica se a etiqueta foi excluída, com `true` para exclusão e `false` para indicação de que a etiqueta permanece ativa.
+      tags:
+        - Label Associado
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LabelAssociationEdit'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  log_out:
+    post:
+      operationId: logOut
+      summary: Desconexão do Cliente
+      description: |
+        ### `log.out`
+
+        Este evento é emitido quando o cliente é desemparelhado do telefone, indicando que a sessão foi encerrada. A desconexão pode ocorrer por vários motivos e em diferentes pontos do processo de conexão:
+
+        - Durante a tentativa de conexão, se forem recebidas mensagens de erro do tipo `stream:error`, indicando um problema no estabelecimento da conexão.
+        - Logo após a conexão ser estabelecida, através de mensagens de falha de conexão, que podem ser enviadas pelo servidor se houver algum problema com a sessão ou autenticação.
+      tags:
+        - Conexão
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogOut'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  mark_chat_read:
+    post:
+      operationId: markChat-read
+      summary: Marcar Chat como Lido/Não Lido
+      description: |
+        ### `mark.chat:read`
+
+        Este evento é acionado quando um bate-papo é marcado como lido ou não lido em outro dispositivo, refletindo a sincronização do estado de leitura das mensagens através dos dispositivos do usuário. Isso permite que os usuários mantenham a continuidade da sua experiência em diferentes plataformas, garantindo que a marcação de mensagens como lidas ou não lidas seja consistentemente atualizada em todos os dispositivos.
+      tags:
+        - Chat
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MarkChatRead'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  media_retry:
+    post:
+      operationId: mediaRetry
+      summary: Tentativa de Envio de Mídia
+      description: |
+        ### `media.retry`
+        Este evento é acionado quando ocorre uma tentativa de reenvio de um arquivo de mídia, como uma imagem, vídeo ou áudio, após uma falha inicial na transmissão. A necessidade de uma nova tentativa pode surgir devido a diversos fatores, como interrupções de conexão, problemas de servidor ou falhas temporárias no dispositivo receptor.
+      tags:
+        - Tentativa de Mídia
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MediaRetry'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  media_retry_error:
+    post:
+      operationId: mediaRetry-error
+      summary: Tentativa com erro
+      description: |
+        ### `media.retry:error`
+
+        Erros comuns que podem disparar este evento incluem:
+          - Mídia não encontrada: O arquivo de mídia original não está mais disponível ou não pode ser localizado pelo servidor.
+          - Falha de comunicação: Interrupções ou instabilidades na conexão de rede impedem o sucesso da nova tentativa.
+          - Problemas de formato ou codificação: O arquivo de mídia não atende aos requisitos necessários para processamento ou transmissão.
+      tags:
+        - Tentativa de Mídia
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MediaRetryError'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  message_star:
+    post:
+      operationId: messageStart
+      summary: Marcação de Mensagem com Estrela
+      description: |
+        ### `message.start`
+
+        Este evento é acionado quando uma mensagem é marcada com estrela ou tem sua marcação de estrela removida em outro dispositivo. A funcionalidade de marcar mensagens com estrela permite aos usuários destacar mensagens importantes para fácil acesso e referência futura. A sincronização desse estado entre dispositivos assegura que as mensagens marcadas como importantes sejam consistentemente reconhecidas em todas as plataformas do usuário.
+      tags:
+        - Mensagem
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MessageStart'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  message_update:
+    post:
+      operationId: messageUpdate
+      summary: Message Update
+      description: |
+        ### `message.update`
+
+        Este evento é acionado por diversas atualizações relacionadas a mensagens, incluindo a entrega e leitura de mensagens de saída por outros usuários, bem como a leitura de mensagens recebidas em outros dispositivos do usuário. A ordem de envio dos IDs das mensagens pode variar entre os dispositivos Android e iOS, com o Android enviando da mais recente para a mais antiga, e o iOS da mais antiga para a mais recente.
+
+        Os tipos de atualização de mensagens podem ser:
+          - `delivery_ack`: A mensagem foi entregue ao dispositivo do destinatário.
+          - `sender`: A mensagem foi entregue a outros dispositivos do remetente.
+          - `retry`: A mensagem foi entregue, mas houve falha na descriptografia.
+          - `read`: O destinatário abriu o chat e viu a mensagem.
+          - `read-self`: O próprio usuário leu a mensagem em um dispositivo diferente.
+          - `played`: Uma mensagem de mídia de visualização única foi aberta.
+          - `played-self`: O próprio usuário abriu uma mensagem de mídia de visualização única em um dispositivo diferente.
+      tags:
+        - Mensagem
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MessageUpdate'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  new_message:
+    post:
+      operationId: newMessage
+      summary: Nova Mensagem
+      description: |
+        ### `new.message`
+
+        Este evento é acionado sempre que uma nova mensagem é recebida, capturando uma ampla gama de tipos de conteúdo e contextos de mensagem, desde textos simples até mensagens multimídia complexas, incluindo documentos, imagens e vídeos, bem como mensagens efêmeras e de visualização única.
+
+        Detalhes da mensagem:
+          - `info`: Contém metadados essenciais da mensagem, incluindo o identificador do chat (`chat`), o remetente da mensagem (`sender`), se a mensagem foi enviada pelo próprio usuário (`isfromme`), se a mensagem é parte de um grupo (`isgroup`), e outros detalhes como o tipo de mensagem, o momento do envio (`timestamp`) e categorias específicas (`category`).
+          - `message`: Estrutura da mensagem em si, podendo conter texto, links, metadados de mídia, entre outros, dependendo do tipo de mensagem enviada.
+          - `isephemeral`: Indica se a mensagem é efêmera, ou seja, se ela desaparecerá após ser vista ou após um determinado período.
+          - `isviewonce`, `isviewoncev2`: Indicam se a mensagem é de visualização única, uma funcionalidade que permite enviar mídias que só podem ser visualizadas uma vez pelo destinatário.
+          - `isdocumentwithcaption`: Especifica se a mensagem é um documento acompanhado de uma legenda.
+          - `isedit`: Indica se a mensagem é uma edição de uma mensagem anterior.
+
+      tags:
+        - Mensagem
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NewMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  off_line_sync_completed:
+    post:
+      operationId: offLineSync-completed
+      summary: Conclusão da Sincronização Offline
+      description: |
+        ### `offline.sync:completed`
+
+        Este evento é acionado após a conclusão bem-sucedida do processo de sincronização offline, indicando que todos os eventos perdidos foram enviados pelo servidor e recebidos pelo cliente. Esse processo é crucial para garantir que o aplicativo esteja atualizado com todas as alterações ocorridas enquanto o cliente estava offline.
+
+        Detalhes do evento:
+          - `count`: Representa o número total de eventos que foram sincronizados durante esta sessão de sincronização offline. Este contador fornece uma visão quantitativa do volume de dados atualizados e é útil para monitorar a eficiência da sincronização e para fins de diagnóstico.
+      tags:
+        - Sincronização
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multpart/form-data:
+            schema:
+              $ref: '#/components/schemas/OfflineSyncCompleted'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  off_line_sync_preview:
+    post:
+      operationId: offLineSync-preview
+      summary: Visualização da Sincronização Offline
+      description: |
+        ### `offline.sync:preview`
+
+        Este evento é disparado imediatamente após o cliente reconectar-se, fornecendo uma prévia dos eventos que foram perdidos durante o período de inatividade. Esta funcionalidade permite ao cliente antecipar a quantidade e o tipo de dados que serão sincronizados, possibilitando uma gestão de recursos mais eficiente e preparando o aplicativo para processar as atualizações recebidas.
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      tags:
+        - Sincronização
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OfflineSyncPreview'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  device_paring:
+    post:
+      operationId: deviceParing
+      summary: Emparelhamento de Dispositivo
+      description: |
+        ### `device.paring`
+
+        Indica o resultado do processo de emparelhamento entre dispositivos. Cada valor enum representa um estado distinto do emparelhamento:
+
+          - `success`: Indica que o emparelhamento foi concluído com êxito. Este estado é alcançado após a leitura correta do código QR pelo telefone e a conclusão bem-sucedida do handshake entre os dispositivos. Um emparelhamento bem-sucedido estabelece uma conexão segura e autorizada, permitindo a comunicação futura entre os dispositivos.
+
+          - `error`: Significa que ocorreu um problema durante o processo de emparelhamento, impedindo a conclusão bem-sucedida da conexão. Esse estado pode ser resultado de vários fatores, como problemas de conectividade, erros de leitura do código QR, falhas na autenticação ou outros problemas técnicos. A presença de um erro exige uma investigação adicional para identificar e resolver a causa subjacente, possibilitando novas tentativas de emparelhamento.
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      tags:
+        - Sincronização
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceParing'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  presence_update:
+    post:
+      operationId: presenceUpdate
+      summary: Atualização de Presença
+      description: |
+        ### `presence.update`
+
+        Este evento é acionado quando uma atualização de presença de um usuário é recebida, indicando mudanças no estado de conexão do usuário, como ficar online ou offline. Essas atualizações fornecem informações valiosas sobre a disponibilidade dos usuários, permitindo que outros usuários saibam se e quando um contato está disponível para comunicação.
+
+        Detalhes da atualização:
+        - `from`: Identificador do usuário cuja presença foi atualizada, geralmente no formato `123@s.whatsapp.net`.
+        - `unavailable`: Um valor booleano que indica se o usuário está offline (`true`) ou não. Se `false`, presume-se que o usuário esteja online.
+        - `lastSeen`: A data e hora da última vez que o usuário esteve online. Este valor pode estar ausente ou ser zero se o usuário optou por ocultar suas informações de "visto pela última vez" nas configurações de privacidade.
+
+        Para receber essas atualizações, é necessário que o dispositivo esteja marcado como online usando o endpoint específico [mark-online](/#). Sem indicar a presença online, as atualizações de presença de outros contatos não serão enviadas pelo WhatsApp, mantendo a privacidade das informações de presença até que haja uma intenção clara de participar na rede.
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      tags:
+        - Chat
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PresenceUpdate'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  privacy_settings:
+    post:
+      operationId: privacySettings
+      summary: Alteração nas Configurações de Privacidade
+      description: |
+        ### `privacy.settings`
+
+        Este evento é acionado quando há uma alteração nas configurações de privacidade do usuário. As configurações de privacidade permitem que os usuários controlem quem pode ver suas informações pessoais e interagir com eles em determinados contextos. A alteração dessas configurações reflete a escolha do usuário em proteger sua privacidade e gerenciar a visibilidade de suas informações.
+
+        Tipos de configurações alteradas:
+        - `groupAddChanged`: Indica uma alteração na permissão de quem pode adicionar o usuário a grupos.
+        - `lastSeenChanged`: Reflete uma mudança na visibilidade da informação "visto por último" do usuário.
+        - `statusChanged`: Relacionado à visibilidade das atualizações de status do usuário.
+        - `profileChanged`: Indica uma alteração nas permissões de quem pode ver a foto do perfil e a informação do usuário.
+        - `readReceiptsChanged`: Reflete uma mudança na configuração de envio de recibos de leitura.
+        - `onlineChanged`: Relacionado à visibilidade do status online do usuário.
+        - `callAddChanged`: Indica uma alteração na permissão de quem pode ligar para o usuário.
+
+        A propriedade `activated` indica se a nova configuração foi ativada (`true`) ou desativada (`false`), permitindo uma compreensão clara da ação realizada pelo usuário em cada tipo de configuração de privacidade.
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      tags:
+        - Dispositivo
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PrivacySettings'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  profile_picture:
+    post:
+      operationId: profilePicture
+      summary: Atualização da Foto de Perfil
+      description: |
+        ### `profile.picture`
+
+        Este evento é acionado sempre que há uma alteração na foto de perfil de um usuário ou na foto de um grupo no WhatsApp. A atualização pode envolver a adição de uma nova foto ou a remoção da existente.
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      tags:
+        - Perfil
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProfilePicture'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  profile.pushName:
+    post:
+      operationId: profilePushName
+      summary: Atualização do Nome de Push
+      description: |
+        ### `profile.pushName`
+
+        Este evento é acionado quando um usuário altera seu nome de push no WhatsApp, e uma mensagem é recebida do mesmo, refletindo o novo nome. O nome de push é um pseudônimo que os usuários podem definir em suas configurações do WhatsApp e é exibido para contatos em mensagens e notificações.
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      tags:
+        - Perfil
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProfilePushName'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  profile.pushName_business:
+    post:
+      operationId: profilePushName-business
+      summary: Atualização do Nome Comercial
+      description: |
+        ### `profile.pushName:business`
+
+        Este evento é acionado quando uma atualização no nome comercial verificado de uma conta WhatsApp Business é detectada através de uma mensagem recebida. A alteração do nome comercial reflete uma mudança na identidade ou na marca da empresa representada no WhatsApp, sendo crucial para a comunicação e o reconhecimento empresarial na plataforma.
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      tags:
+        - Perfil
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProfilePushNameBusiness'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  profile_push_name_self:
+    post:
+      operationId: profilePushName-self
+      summary: Atualização do Nome de Push do Usuário
+      description: |
+        ### `profile.pushName:self`
+
+        Este evento é acionado quando o usuário atualiza seu próprio nome de push (o nome que aparece nas notificações e na lista de contatos dos outros usuários) de um dispositivo diferente. A alteração do nome de push reflete uma atualização na forma como o usuário deseja ser identificado pelos outros dentro do WhatsApp.
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      tags:
+        - Perfil
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProfilePushNameSelf'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  pinned_chat:
+    post:
+      operationId: pinnedChat
+      summary: Fixação de Bate-Papo
+      description: |
+        ### `pinned.chat`
+
+        Este evento é acionado quando um bate-papo é fixado ou desfixado em outro dispositivo. Fixar bate-papos permite aos usuários destacar conversas importantes no topo da lista de bate-papos, facilitando o acesso rápido a elas. A sincronização dessa ação entre dispositivos garante que os bate-papos fixados sejam consistentemente destacados, independentemente do dispositivo utilizado para acessar o WhatsApp.
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      tags:
+        - Chat
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PinnedChat'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  qrcode_update:
+    post:
+      operationId: qrcodeUpdate
+      summary: Atualização do Código QR
+      description: |
+        ### `qrcode.update`
+
+        Este evento é acionado quando um novo código QR é gerado para o processo de emparelhamento de dispositivos, tipicamente ocorrendo quando não existem dados de sessão salvos no armazenamento do dispositivo. O código QR gerado permite o emparelhamento seguro entre o dispositivo do usuário e o servidor do WhatsApp, iniciando uma nova sessão.
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      tags:
+        - Conexão
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QrCodeUpdate'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  connection_stream:
+    post:
+      operationId: connectionStream
+      summary: Erros e Interrupções de Fluxo de Conexão
+      description: |
+        ### `connection.stream`
+
+        Este evento é acionado em resposta a problemas ou alterações no estado da conexão com os servidores do WhatsApp, indicados por mensagens do tipo `<stream:error>` ou eventos de substituição de conexão. Os eventos podem ser de dois tipos principais:
+
+        - `error`: Emitido quando o servidor do WhatsApp envia uma mensagem `<stream:error>` com um código de erro desconhecido. Os erros conhecidos são processados internamente e resultam na emissão de eventos específicos, como `logged.out`, indicando situações como deslogamentos forçados ou banimentos temporários.
+        - `replaced`: Emitido quando uma conexão é interrompida devido à conexão de outro cliente com as mesmas chaves de sessão. Isso pode ocorrer se, por engano, outra instância do cliente for iniciada com a mesma sessão, ou se houver tentativas de conectar a mesma sessão simultaneamente em dispositivos ou processos diferentes.
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      tags:
+        - Conexão
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConnectionStream'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  temporary_ban:
+    post:
+      operationId: temporaryBan
+      summary: Banimento Temporário
+      description: |
+        ### `temporary.ban`
+
+        Este evento é acionado quando uma conta é submetida a um banimento temporário devido a violações das políticas do WhatsApp. O banimento temporário é uma medida preventiva que visa alertar os usuários sobre comportamentos que estão em desacordo com os Termos de Serviço do WhatsApp, dando-lhes a oportunidade de corrigir tais comportamentos antes de medidas mais severas serem tomadas.
+
+        etalhes do banimento:
+          - `code`: O código associado ao tipo de banimento. O código `402` é utilizado para indicar um banimento temporário.
+          - `expire`: A data e hora em que o banimento será levantado e o acesso à conta será restaurado. Este campo fornece aos usuários uma indicação clara de quanto tempo o banimento permanecerá em vigor.
+          - `message`: Uma mensagem explicativa fornecida pelo WhatsApp, detalhando a razão do banimento e possíveis ações corretivas que o usuário pode tomar para evitar futuros banimentos.
+      tags:
+        - Banimento
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TemporaryBan'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  undecryptable_message:
+    post:
+      operationId: undecryptableMessage
+      summary: Mensagem Indecifrável
+      description: |
+        ### `undecryptable.message`
+
+        Este evento é acionado quando o cliente recebe uma mensagem que não pode ser descriptografada. Isso pode ocorrer por vários motivos, como problemas com as chaves de criptografia, alteração de dispositivo sem a devida transferência de chaves de segurança, ou mensagens enviadas em um formato incompatível.
+
+        Detalhes da mensagem indecifrável:
+        - `info`: Metadados associados à mensagem indecifrável, incluindo identificador do chat, remetente, e outras informações relevantes que podem ser utilizadas para rastrear ou diagnosticar o problema.
+        - `isUnavailable`: Indica se a mensagem está permanentemente indisponível (`true`) ou se pode haver uma tentativa de recuperação ou retransmissão (`false`).
+        - `decryptFailMode`: Descreve o modo de falha de descriptografia, fornecendo informações sobre o tipo de erro que impediu a descriptografia da mensagem.
+
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      tags:
+        - Mensagem
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UndecryptableMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  unknown_call:
+    post:
+      operationId: unknownCall
+      summary: Chamada Desconhecida
+      description: |
+        ### `unknown.call`
+        Este evento é acionado quando o sistema recebe um elemento de chamada que contém conteúdo ou estrutura desconhecidos ou não esperados. Isso pode ocorrer por diversas razões, como atualizações no protocolo de chamadas do WhatsApp que ainda não foram integradas ao cliente ou tentativas de chamada com recursos não suportados.
+
+        Detalhes da chamada desconhecida:
+        - `node`: Um objeto que representa a estrutura de dados da chamada recebida. Devido ao conteúdo ser desconhecido, este objeto contém propriedades adicionais que não foram mapeadas, fornecendo informações brutos que podem ser usadas para análise e diagnóstico.
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      tags:
+        - Chamada
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UnknownCall'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  whatsapp_connected:
+    post:
+      operationId: whatsappConnected
+      summary: Conexão Bem-sucedida com o WhatsApp
+      description: |
+        ### `whatsapp.connected`
+
+        Este evento indica que o cliente estabeleceu uma conexão bem-sucedida com os servidores do WhatsApp e passou pelo processo de autenticação. Isso significa que o cliente está agora pronto para enviar e receber mensagens e interagir com o WhatsApp de maneira segura e eficaz.
+
+        Detalhes da conexão:
+        - `status`: Indica o estado atual da conexão. O valor `open` confirma que a conexão está ativa e estabelecida.
+        - `statusReason`: Código de status que fornece mais detalhes sobre o estado da conexão. O valor `200` indica sucesso na conexão e autenticação.
+        - `message`: Mensagem descritiva associada ao evento de conexão. "Conectado com sucesso" indica que todas as etapas de conexão e autenticação foram concluídas sem erros.
+        - `timestamp`: A data e hora em que a conexão foi estabelecida, fornecendo um registro temporal do evento.
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      tags:
+        - Conexão
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WhatsAppConnected'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  websocket_disconnnected:
+    post:
+      operationId: websocketDisconnected
+      summary: Desconexão do Websocket
+      description: |
+        ### `websocket.disconnected`
+
+        Este evento é acionado quando a conexão websocket entre o cliente e os servidores do WhatsApp é interrompida. A desconexão pode ser iniciada pelo servidor por diversos motivos, como inatividade prolongada, falhas no servidor, ou problemas de rede.
+
+        Detalhes da desconexão:
+        - `status`: Indica o estado atual da conexão websocket no momento da desconexão. O valor `close` confirma que a conexão foi encerrada.
+        - `statusReason`: Código numérico que fornece mais detalhes sobre o motivo da desconexão, facilitando a identificação de problemas e a tomada de ações corretivas.
+        - `timestamp`: A data e hora em que a desconexão ocorreu, fornecendo um registro temporal do evento.
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      tags:
+        - Conexão
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WebsocketDisconnected'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
+  send_message:
+    post: 
+      operationId: sendMessage
+      summary: Envio de Mensagem
+      description: |
+        ### `send.message`
+
+        Este evento é acionado quando uma mensagem é enviada com sucesso ou quando ocorre um erro durante o envio. Ele fornece feedback sobre o resultado da tentativa de envio, permitindo que o sistema de mensagens identifique e reaja apropriadamente às condições de sucesso ou falha.
+
+        Detalhes do envio:
+        - `sent`: Contém informações sobre a mensagem enviada com sucesso, incluindo:
+          - `messageID`: O identificador único da mensagem enviada, usado para rastrear e referenciar a mensagem no futuro.
+          - `timestamp`: A data e hora em que a mensagem foi enviada, fornecendo um registro temporal do envio.
+        - `message`: Estrutura que detalha o conteúdo da mensagem enviada, incluindo o tipo de conteúdo (`contentType`) e o próprio conteúdo (`content`), que pode variar dependendo do tipo de mensagem (texto, imagem, vídeo, etc.).
+        
+        Em caso de erro:
+        - `error`: Fornece detalhes sobre o erro ocorrido durante a tentativa de envio da mensagem, incluindo:
+          - `isError`: Um indicador booleano de que ocorreu um erro.
+          - `description`: Uma descrição textual do erro, fornecendo insights sobre a natureza do problema e possíveis ações corretivas.
+      parameters: 
+        - $ref: "#/components/parameters/InstanceIdHeader"
+        - $ref: "#/components/parameters/WhatsAppHeader"
+      tags: 
+        -  Mensagem
+      requestBody: 
+        content: 
+          multipart/form-data:
+            schema: 
+              $ref: "#/components/schemas/SendMessage"
+      responses: 
+        '200':
+          $ref: "#/components/responses/SuccessfulResponse"
+        

@@ -1,0 +1,2626 @@
+openapi: 3.0.0
+paths:
+  /api/v3/instance/{instance}:
+    get:
+      operationId: InstanceController_find
+      summary: Pesquisar uma instância
+      description: "### Parâmetro da instância\r\n\r\n* `instance` - Identificador da instância que você deseja recuperar. Este pode ser o **nome da instância**, ou o **ID da instância**, ou o **número do dispositivo conectado**."
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      responses:
+        '200':
+          description: "### Sucesso na resposta\r\n\r\n* `state`: **ativo** ou **inativo**\r\n* `status`:\r\n   * **waiting**: informa que a instância está aguardando a conexão.\r\n   * **booting**: informa que a instância está em processo de conexão.\r\n   * **available**: informa que a instância está conectada e pronta para uso.\r\n   * **deleted**: informa que a instância foi deletada.\r\n* `connections`:\r\n   * **close**: conexão fechada.\r\n   * **open**: conexão aberta.\r\n   * **refused**: conexão recusada."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstanceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: &ref_0
+        - 'Controlador de Instância'
+      security: &ref_1
+        - InstanceKey: []
+    delete:
+      operationId: InstanceController_delete
+      summary: Deletar uma instância
+      description: "### ⚠️⚠️Atenção:\r\n\r\nAntes de excluir a instância, efetue logout.\r\n\r\n### Parâmetro da instância\r\n\r\n* `instance` - Identificador da instância que você deseja recuperar. Este pode ser o **nome da instância**, ou o **ID da instância**, ou o **número do dispositivo conectado**."
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      responses:
+        '200':
+          description: "### Sucesso na resposta\r\n\r\n* `state`: **ativo** ou **inativo**\r\n* `status`:\r\n   * **waiting**: informa que a instância está aguardando a conexão.\r\n   * **booting**: informa que a instância está em processo de conexão.\r\n   * **available**: informa que a instância está conectada e pronta para uso.\r\n   * **deleted**: informa que a instância foi deletada.\r\n* `connections`:\r\n   * **close**: conexão fechada.\r\n   * **open**: conexão aberta.\r\n   * **refused**: conexão recusada."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstanceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_0
+      security: *ref_1
+  /api/v3/instance/{instance}/webhook:
+    post:
+      operationId: WebhookController_create
+      summary: Criar uma webhook
+      description: "Este endpoint é usado para registrar um novo webhook. Os usuários podem especificar a URL para a qual as notificações de eventos devem ser enviadas, bem como os eventos de interesse.\r\n\r\n### Parâmetro\r\n\r\n* `instance` - Identificador da instância que você deseja recuperar. Este pode ser o **nome da instância**, ou o **ID da instância**, ou o **número do dispositivo conectado**."
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookDto'
+      responses:
+        '200':
+          description: Resposta de sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: &ref_2
+        - 'Controlador de webhook'
+      security: &ref_3
+        - InstanceKey: []
+    get:
+      operationId: WebhookController_find
+      summary: Pesquisar todos os webhooks
+      description: "### Parâmetro da instância\r\n\r\n* `instance` - Identificador da instância que você deseja recuperar. Este pode ser o **nome da instância**, ou o **ID da instância**, ou o **número do dispositivo conectado**."
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      responses:
+        '200':
+          description: Response Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_2
+      security: *ref_3
+  /api/v3/instance/{instance}/webhook/{webhookId}:
+    get:
+      operationId: WebhookController_findOne
+      summary: Pesquisar um webhooks
+      description: "### Parâmetros\r\n\r\n- `instance`: Identificador da instância que deseja recuperar. Este pode ser o **nome da instância**, ou o **ID da instância**, ou o **número do dispositivo conectado**.\r\n\r\n- `webhookId`: identificador exclusivo do webhook."
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+        - name: webhookId
+          required: true
+          in: path
+          description: Identificador exclusivo do webhook.
+          schema:
+            title: Webhook ID
+            type: string
+      responses:
+        '200':
+          description: Resposta de sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_2
+      security: *ref_3
+    put:
+      operationId: WebhookController_update
+      summary: Atualizar um webhook
+      description: "### Parâmetros\r\n\r\n- `instance`: Identificador da instância que deseja recuperar. Este pode ser o **nome da instância**, ou o **ID da instância**, ou o **número do dispositivo conectado**.\r\n\r\n- `webhookId`: identificador exclusivo do webhook."
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+        - name: webhookId
+          required: true
+          in: path
+          description: Identificador exclusivo do webhook.
+          schema:
+            title: Webhook ID
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookUpDto'
+      responses:
+        '200':
+          description: Resposta de sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_2
+      security: *ref_3
+  /api/v3/instance/{instance}/webhook/{webhookId}/events:
+    patch:
+      operationId: WebhookController_updateEvents
+      summary: Definir eventos
+      description: "### Parâmetros\r\n\r\n- `instance`: Identificador da instância que deseja recuperar. Este pode ser o **nome da instância**, ou o **ID da instância**, ou o **número do dispositivo conectado**.\r\n\r\n- `webhookId`: identificador exclusivo do webhook."
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+        - name: webhookId
+          required: true
+          in: path
+          description: Identificador exclusivo do webhook.
+          schema:
+            title: Webhook ID
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookEventsDto'
+      responses:
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_2
+      security: *ref_3
+  /api/v3/instance/{instance}/qrcode:
+    get:
+      operationId: ViewsController_displayQrcode
+      summary: Exibir página do QrCode
+      description: Retorna o html da página de exibição do qrcode.
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      responses:
+        '200':
+          description: Resposta de sucesso - Html
+        '400':
+          description: >-
+            Ocorre quando há uma tentativa de gerar uma página para uma
+            instância já conectada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+      tags:
+        - 'Páginas de Visualizações'
+  /api/v3/instance/{instance}/whatsapp/connect:
+    get:
+      operationId: WhatsAppController_connect
+      summary: Conectar ao WhatsApp
+      description: "Este endpoint inicia o processo de conexão de um número do WhatsApp com a aplicação. A conexão é o primeiro passo para habilitar a comunicação e a manipulação do perfil e configurações.\r\n\r\n### Parâmetro da instância\r\n\r\n* `instance` - Identificador da instância que você deseja recuperar. Este pode ser o **nome da instância**, ou o **ID da instância**, ou o **número do dispositivo conectado**."
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      responses:
+        '200':
+          description: Resposta de sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseConnect'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: &ref_4
+        - 'Controlador WhatsApp'
+      security: &ref_5
+        - InstanceKey: []
+  /api/v3/instance/{instance}/whatsapp/logout:
+    delete:
+      operationId: WhatsAppController_logout
+      summary: Desconectar WhatsApp
+      description: "Efetua logout do número conectado, encerrando a sessão ativa.\r\n\r\n### Parâmetro da instância\r\n\r\n- `instance` - Identificador da instância que você deseja recuperar. Este pode ser o **nome da instância**, ou o **ID da instância**, ou o **número do dispositivo conectado**.\r\n"
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      responses:
+        '200':
+          description: Resposta de sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseLogout'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_4
+      security: *ref_5
+  /instance/{instanceId}/send/text:
+    post:
+      operationId: SendMessageController_text
+      summary: Mensagem de Texto
+      description: |-
+        ### Mensagem de Texto
+
+        Permite o envio de mensagens de texto simples.
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TextMessage'
+            examples:
+              model:
+                summary: Modelo
+                value:
+                  recipient: string
+                  textMessage:
+                    text: string
+                  optionsMessage:
+                    messageId: string
+                    delay: 0
+                    presence: composing
+                    quotedMessage:
+                      messageId: string
+                      sender: string
+                      message: {}
+                    groupMention:
+                      hiddenMention: true
+              basic:
+                summary: Básico
+                value:
+                  recipient: '5531911111111'
+                  textMessage:
+                    text: Olá
+              partial1:
+                summary: Exemplo 1 - Definição do ID
+                value:
+                  recipient: '5531911111111'
+                  textMessage:
+                    text: Exemplo parcial com a definição do id da mensagem
+                  optionsMessage:
+                    messageId: adbd8fe6-8c44-442b-8c26-b585345b6a52
+                    delay: 1200
+                    presence: composing
+              partial2:
+                summary: Exemplo 2 - Citação
+                value:
+                  recipient: '5531911111111'
+                  textMessage:
+                    text: >-
+                      Exemplo parcial, onde o identificador da mensagem não é
+                      definido, mas inclui uma mensagem de citação.
+                  optionsMessage:
+                    delay: 1200
+                    presence: composing
+                    quotedMessage:
+                      messageId: 3EB0FD55D8B4306B0977B2
+                      sender: 123@s.whatsapp.net
+                      message:
+                        imageMessage:
+                          url: >-
+                            https://mmg.whatsapp.net/o1/v/t62.7118-24/f1/m234/up-oil-image-d16c99b3-0158-4d04-a7e1-ae0b17207c68?ccb=9-4&oh=01_AdT0G6SXTp3Hfkqlekfw4S9v23zmbK8YQNVRk3ypySmEOg&oe=65F814A5&_nc_sid=000000&mms3=true
+                          mimetype: image/jpeg
+                          caption: Test
+                          fileSha256: RjDdX6soZbuI2PD+pnLZC3FeBY5SY63Gcxgw0SY7L5I=
+                          fileLength: 199221
+                          height: 1600
+                          width: 914
+                          mediaKey: PPfTAq0qO4Q78u0Nhe/Iu+gc5WV0KNLOqYU/Q+bhhIY=
+                          fileEncSha256: N5dmUTcSmnnN486ziRAhMviWwD7Gi2g+RfnBZmC4bZs=
+                          directPath: >-
+                            /o1/v/t62.7118-24/f1/m234/up-oil-image-d16c99b3-0158-4d04-a7e1-ae0b17207c68?ccb=9-4&oh=01_AdSFDJMyBt3jJ2xrrQC8FskRMQetRinciHprsKJYKeELqQ&oe=65FF1CA5&_nc_sid=000000
+                          mediaKeyTimestamp: 1708173119
+                          jpegThumbnail: >-
+                            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
+                          contextInfo:
+                            disappearingMode:
+                              initiator: 0
+                          viewOnce: false
+              partial3:
+                summary: Exemplo 3 - Definição do ID e Menção
+                value:
+                  recipient: 123@g.us
+                  textMessage:
+                    text: >-
+                      Exemplo parcial com a definição do id da mensagem e menção
+                      e um grupo
+                  optionsMessage:
+                    messageId: adbd8fe6-8c44-442b-8c26-b585345b6a52
+                    delay: 1200
+                    presence: composing
+                    groupMention:
+                      hiddenMention: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseMessage'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: &ref_6
+        - 'Controlador de Envio de Mensagens'
+      security: &ref_7
+        - InstanceKey: []
+  /instance/{instanceId}/send/link:
+    post:
+      operationId: SendMessageController_link
+      summary: Mensagem de Link Preview
+      description: >-
+        ### Mensagem de Link Preview
+
+
+        Facilita o compartilhamento de links com um texto opcional de
+        acompanhamento.
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkMessage'
+            examples:
+              model:
+                summary: Modelo
+                value:
+                  recipient: string
+                  textMessage:
+                    link: string
+                    text: string
+                  optionsMessage:
+                    messageId: string
+                    delay: 0
+                    presence: composing
+                    quotedMessage:
+                      messageId: string
+                      sender: string
+                      message: {}
+                    groupMention:
+                      hiddenMention: true
+              basic:
+                summary: Básico
+                value:
+                  recipient: '5531911111111'
+                  textMessage:
+                    link: https://github.com/code-chat-br/whatsapp-api
+              partial1:
+                summary: Exemplo 1 - Definição do ID
+                value:
+                  recipient: '5531911111111'
+                  textMessage:
+                    link: https://github.com/code-chat-br/whatsapp-api
+                    text: Exemplo parcial com a definição do id da mensagem
+                  optionsMessage:
+                    messageId: adbd8fe6-8c44-442b-8c26-b585345b6a52
+                    delay: 1200
+                    presence: composing
+              partial2:
+                summary: Exemplo 2 - Citação
+                value:
+                  recipient: '5531911111111'
+                  textMessage:
+                    link: https://github.com/code-chat-br/whatsapp-api
+                    text: >-
+                      Exemplo parcial, onde o identificador da mensagem não é
+                      definido, mas inclui uma mensagem de citação.
+                  optionsMessage:
+                    delay: 1200
+                    presence: composing
+                    quotedMessage:
+                      messageId: 3EB0FD55D8B4306B0977B2
+                      sender: 123@s.whatsapp.net
+                      message:
+                        imageMessage:
+                          url: >-
+                            https://mmg.whatsapp.net/o1/v/t62.7118-24/f1/m234/up-oil-image-d16c99b3-0158-4d04-a7e1-ae0b17207c68?ccb=9-4&oh=01_AdT0G6SXTp3Hfkqlekfw4S9v23zmbK8YQNVRk3ypySmEOg&oe=65F814A5&_nc_sid=000000&mms3=true
+                          mimetype: image/jpeg
+                          caption: Test
+                          fileSha256: RjDdX6soZbuI2PD+pnLZC3FeBY5SY63Gcxgw0SY7L5I=
+                          fileLength: 199221
+                          height: 1600
+                          width: 914
+                          mediaKey: PPfTAq0qO4Q78u0Nhe/Iu+gc5WV0KNLOqYU/Q+bhhIY=
+                          fileEncSha256: N5dmUTcSmnnN486ziRAhMviWwD7Gi2g+RfnBZmC4bZs=
+                          directPath: >-
+                            /o1/v/t62.7118-24/f1/m234/up-oil-image-d16c99b3-0158-4d04-a7e1-ae0b17207c68?ccb=9-4&oh=01_AdSFDJMyBt3jJ2xrrQC8FskRMQetRinciHprsKJYKeELqQ&oe=65FF1CA5&_nc_sid=000000
+                          mediaKeyTimestamp: 1708173119
+                          jpegThumbnail: >-
+                            /9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/2wBDAQMDAwQDBAgEBAgQCwkLEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBD/wAARCABkADkDASIAAhEBAxEB/8QAHQAAAgIDAQEBAAAAAAAAAAAABgcECAADBQIJAf/EAD4QAAICAQMDAwEEBgUNAAAAAAECAwQFBgcRABITCBQhMQkiUWEVI0FSs9QWFyVxshgmMjNERVVkdpGio7T/xAAaAQACAwEBAAAAAAAAAAAAAAADBAACBQYB/8QAMhEAAQMDAQQIBAcAAAAAAAAAAQACAwQRITEFEkFxIjJRUmGhscEUI4GRBhMVM0Ji8f/aAAwDAQACEQMRAD8AvO85I4H06ivJ9Rz9OvBkJ5J+Oo003YOOehAIa8XJeB8dcO0/JPB6nWZy/PXJnk+Tz0djUN2VzLh/WH8uubISAef2/PUu05LEfieoM5IUnpkIa51li7n8OtPJ/E/9+vbg889a+R+PRwqWTvxnZLlKkcgDq88YYEcggsPjqvHqM+0HwWwW8eoNpm2Bo544L2n9oHNJV83mqwz/AOq9o/b2+bt/0jz28/HPAfmGn7s3QUn62ov8Y6prv/qXR2lfUp6kLuqNN67t18jicXhMplNP6YhytahjLeA8fZZeaxElctcNGyj8dxbH9gYCR+MgMaZOkLi3uE+HFrMYz7FZJ9rZp4D59LdAj/qZP5Hqe32oePbBQ6i/yXNKNUsPJEkZ1/jxaBRGdu6savmQEIQGZAGYqqksyghlje6pi8PrHbzKaC3vwUu4es9R5HPQRaQAkrZXUOHatUwYga3H7wA2DbRpDE8hqwdtceTyQit7dTTeUx2p9MYjZHcnK1NP6RraJ1llrWka8ljE47HYCxXqvPWLSezdsrxbkD2FEYxNZgXcMIyCOPueZVTI/i7yCZGf+1awWByD4y76UNOyzRrG7PS1lUuREOiuAJYabxk8MAQG5VgVYBgQO/tl9pPp7cXXWkNIv6XtO0K+rM/j8ELP9Kqk81Y2rIh8pre0WRgvJbg9oIC/eAYHpQY/1XZPa3b/AEJEdK7raYirav0HqbK3kotSrZbAVtO1aEsCyeZROlqXGWnhR/1U0cRYsCrKuY/VmksXkPSfsFkNtdxdNax0RrPT16P+l2C/R7BbuSkkyrxP5+Zq8tv2qwd1ZWRaknMjF2UQxtA6vmVBI4nreQV0dzfbVtx9Q4qjUrVa9KSskUUEYRVDVIXP3R8D7zsfj8ehnn8h0QbrPxu1q3g/San/APDX6FfL+XWhD+23kPRKyGz3cynDg5y2fxwB4Hu4f8Y6+fXrp3F1Ho/1Db1YDTj0q02czGmYpbct2usqQyaXu0ZoVrygl45IMjMrzjgQkR8kNIjC+2Asgaixi931uwj/AMx1Qb1l53RVT1j7r4TXFDXdujYuaeyLR6UmqwTdlXA9zFppoZHj7RIJfu/c7YpO9SRHJEhhkl3aW9wmWNdIzdbrflwKVepfVpiNQb519912ioY6/VzGNvLjaGSSrVEVXKtkJPiCCNp7ExSur2LBmHebMnj+/WSors9uLp3O6Ifb+voqzSoYrK28pphocqGkqvaSnFY98WhPvC0VCIho/bBZHkbt8fZCmvTtO/qbc3FwbOU9RzZ9rUM2JazLFYtWb8cgc2XPCrAnCtKe4yCPtPdIy8uHFqX0xba7XZQae3X9R2N01qHKxM7UF0rZysUcDzHxutsiMEkIOZAkfBEi88BuV6valFs+VsMpO+4XDWte91hqd1ocQPG1uCLDQ1NVGZIxgGxJLQ3w6RIF/DkeKItkM9NrifObnXKeN0jidPbjYfcXWesrDXMyMZdjN72UD0PKk9mrPbslE8TtPHzM08simNo2Vldh91tE659OOTwOLram2Pwmr9Nz6Q1LXtWJbdSrkcu1ovcgYQiF7T2YS7Gv2oIaUIl7/J5k3W9L252F3b0Zmdp9Z6adJ5ZM/g9X+/WfGmxVvd0T+JYH8LKHrcw9s6FvIQ7AOkdj/SpqPdbD7t5ijomniZtaruJYwW88q2IHpZhlunw36wsvXeEvE+emEdUSt30kLQxxSKieRVtPWs/NpXhzf9Gb5BuCM6aEIklFPS2FQwtvoe21tOB1Bxzun1uyxG7urw3wBPT4+f8Aka/Qj7j8j0SbvyFd5NZIT8eekB/d7Cv0J96/n1twj5TOQ9AsyU/MdzPqmfpmQtqbElj/ALdB/EXr5w/aN4eO96u92MuuYxsMuMOBZqM85js2IpMXURpIQR2SeNvGGQN5OJQ6oyJM8f0T0vOTqnDoW+t+uP8A2L1WffnYrSu/Pqt9QWAz9iahbx8ulbGPyNaONpYJGwpXtPcCWiJKM8asvcY0+8CAQKmpn1NWImalp8sq00rYqcvdoCFWT0QZHA4TdqXLWrNV764O77OKSv3SxSh4PvQfBLSmL3AIQd3Z3fUMwFnNxdQepy1r7Bf1Ce4z0tKzjIYNLrg47dK2A9lrT3LR4FSBFXHxlZJIw4t9yMpic9VK3s2g1X6VNYaYyeO1pdyfmqyzYnJwxrUME8bN5YPEzy8oPNGzA8K4lkTj5Yiy+2P2guyFDGxao1TtBmaGtNJY4GKbEXqNmlmJe6v3yf2gomqeSaNfuVlkkSKSRvveMFciq2bV0G1vjYsO3d12c24aa6+ZXT0m1tl1OwHbPnad/e3muAFvqTkdmnYnN689stm9rPRbqbT2L0HDph21bFldPjsrw+fKz5GcuIxVbgqtE2vEsg4SuYU+Hj7Uq5sTpHFQ7gUr+wO2GR1DpTBZLAZjPXtcTCrexuepTTu0WPkgeurNHDZXvilR08kf3uVMLOAeqD1ga/8AWbrbBYHJyUtFaPgtQRY/DzZBnp1bMnEb3rlgIpkYd78P4wIouQq8tI0hX6dX13ozbjVv6O1fp7Dp7rJQYqmK8F6hLk8dFj4bUs+VkvQVKcMrZCiUneWaGRhIsSh2ghsjqYquKAilIEmtnXLckXuAQScHjxP1SoX0U84FbcRd5o6WAcC+LG4vi+B4q1eO3E/rW1Bntce0mqG9bSGSvMpWSGSCFIHjcEAhlaIqQfoQf7+uxxH+HSH9IeQu39oKuSyNye1bt3Lk8887l5JZGsSFnZj8lieSSfknp2+dv3uuka2zWjwHosB5BcSO0ph6Rb/OvC8n/eNb+KvSf1trF9P+sXf/AAT4LWF+HLXdHyCTTWanxckMsODkK+aeC1WcRlXf4ZjGWCcjv8fLT0dKzavwnbzwclW/ir1Tn1kbyLtP61d2EODvX2v29MXEeplmolDWxdcmNwI3EscglKsjDjj5HDdrLz+2aaaqidDTkhxGCDY4c063Hqt7YD6OOqY6vNorm+L/AMXWxY8bcE6Nw91Z32e1DioNL7jVat7TWcdLGe1ZduxQx26Pt5Wtxy5CV3VE4ZYZY3aM+R4oxIWJ+b0iaRNhLc25maNpIY4WkixTuB44wiJG7zqxjVVVE7gp7QPurxx00dTeq2xqDA3sEmAzteG5WyVcxyahSeJhbhaPiQNVEkiRFy6L3jgnjntChVdDuRlHpPA9enTsjEQYaKzjcbQpEQV5orELsYqwkax5YULWe8TuOFaQr3Bg7Doamhic2oJcSeLt71JTn4ln2XUTM/TCN0DOCLnH9W+I+l15vtpnI1adSxuTmrsePhMFGC7jX8FYM7OyDidzHH3szHsUklmPaT9S3EZzTp0JrbA6j3sz/wCks5Vw9XHVqF2/+ibSUpVVI8nHJB3yxw11C1gnPjdVHAUfAvl9fNk8OmPMDxP72XJg1hUgFa2e4hqwiqo1aLvd2MMThCBCOAYUIjWrGpNV1rup9QyzXcVSkntSRJairwVrVt24EcYAjQvKrSGCJQ7RwyEBUQyLsm7xYiy5zDDcEH79nsrt+kyGvR2jp06uSrX0jnscWa6yLG4MrH4Eio/wSQeVHyDxyOD05/Kfx6RXpBITZvHhfgGez8/j+vfp2eUfl1pAYHIeiUKNMblpsXkKuSqxo0tOdJ0DglSyMGHPBHxyPx6JbXqN36Esppw6CEXJ8Ylxdzu45+OSLXH0/LoFM/aPlutT2f3elnQxvN3tB5ozZXM6psjGX1K+o5PlaG3jfP8Aw+7/ADXUOz6n/UmilY8Vt65P7Rjrv810LF3bnk/HWp5VQHgjqCmg7g+y9+Il7xU3J+oz1KWkPfjdDx8g8+OlbBB+R+2yf2Hqnm4Hpx1DrrUGV1HqDJBrWWy13MTGvDEpE9llMi+VkMpiXsUJGzuE5bt4LuWtVNZA+WPx1BnlVvlgOPw6YjjiZowIb5Xv6xQBspot9u9GxaXMkjrXkkdWk47j3sWPPAH7WI+nR97gdQ5pQvIHAHUfzD949FsDohFGBJJIJ54PX6fgfHWdZ0BXWmR2/HqHNI4IAPWdZ1ZqhURiT9T9B1DndiRyfqOs6zooVFBss3PHPx1o72/ePWdZ1dq9X//Z
+                          contextInfo:
+                            disappearingMode:
+                              initiator: 0
+                          viewOnce: false
+              partial3:
+                summary: Exemplo 3 - Definição do ID e Menção
+                value:
+                  recipient: 123@g.us
+                  textMessage:
+                    link: https://github.com/code-chat-br/whatsapp-api
+                    text: >-
+                      Exemplo parcial com a definição do id da mensagem e menção
+                      e um grupo
+                  optionsMessage:
+                    messageId: adbd8fe6-8c44-442b-8c26-b585345b6a52
+                    delay: 1200
+                    presence: composing
+                    groupMention:
+                      hiddenMention: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseMessage'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_6
+      security: *ref_7
+  /instance/{instanceId}/send/media:
+    post:
+      operationId: SendMessageController_media
+      summary: Mensagem de Mídia
+      description: >-
+        ### Mensagem de Mídia
+
+
+        Envie mídias em geral para o Whatsapp, como: imagens, vídeos, adesivos,
+        áudios e documentos.
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaMessage'
+            examples:
+              model:
+                summary: Modelo
+                value:
+                  recipient: string
+                  mediaMessage:
+                    caption: string
+                    url: string
+                    mediatype: audio
+                    filename: string
+                  optionsMessage:
+                    messageId: string
+                    delay: 0
+                    presence: composing
+                    quotedMessage:
+                      messageId: string
+                      sender: string
+                      message: {}
+                    groupMention:
+                      hiddenMention: true
+              basic:
+                summary: Básico
+                value:
+                  recipient: '5531911111111'
+                  mediaMessage:
+                    url: >-
+                      https://as1.ftcdn.net/v2/jpg/02/73/22/74/1000_F_273227473_N0WRQuX3uZCJJxlHKYZF44uaJAkh2xLG.jpg
+                    mediatype: image
+              partial1:
+                summary: Exemplo 1 - Definição do ID
+                value:
+                  recipient: '5531911111111'
+                  mediaMessage:
+                    caption: Exemplo parcial com a definição do id da mensagem
+                    url: >-
+                      https://jsoncompare.org/LearningContainer/SampleFiles/PDF/sample-pdf-download-10-mb.pdf
+                    mediatype: document
+                    filename: embarque.pdf
+                  optionsMessage:
+                    messageId: adbd8fe6-8c44-442b-8c26-b585345b6a52
+                    delay: 1200
+                    presence: composing
+              partial2:
+                summary: Exemplo 2 - Citação
+                value:
+                  recipient: '5531911111111'
+                  mediaMessage:
+                    caption: >-
+                      Exemplo parcial, onde o identificador da mensagem não é
+                      definido, mas inclui uma mensagem de citação.
+                    url: >-
+                      https://jsoncompare.org/LearningContainer/SampleFiles/PDF/sample-pdf-download-10-mb.pdf
+                    mediatype: document
+                    filename: embarque.pdf
+                  optionsMessage:
+                    delay: 1200
+                    presence: composing
+                    quotedMessage:
+                      messageId: 3EB0FD55D8B4306B0977B2
+                      sender: 123@s.whatsapp.net
+                      message:
+                        imageMessage:
+                          url: >-
+                            https://mmg.whatsapp.net/o1/v/t62.7118-24/f1/m234/up-oil-image-d16c99b3-0158-4d04-a7e1-ae0b17207c68?ccb=9-4&oh=01_AdT0G6SXTp3Hfkqlekfw4S9v23zmbK8YQNVRk3ypySmEOg&oe=65F814A5&_nc_sid=000000&mms3=true
+                          mimetype: image/jpeg
+                          caption: Test
+                          fileSha256: RjDdX6soZbuI2PD+pnLZC3FeBY5SY63Gcxgw0SY7L5I=
+                          fileLength: 199221
+                          height: 1600
+                          width: 914
+                          mediaKey: PPfTAq0qO4Q78u0Nhe/Iu+gc5WV0KNLOqYU/Q+bhhIY=
+                          fileEncSha256: N5dmUTcSmnnN486ziRAhMviWwD7Gi2g+RfnBZmC4bZs=
+                          directPath: >-
+                            /o1/v/t62.7118-24/f1/m234/up-oil-image-d16c99b3-0158-4d04-a7e1-ae0b17207c68?ccb=9-4&oh=01_AdSFDJMyBt3jJ2xrrQC8FskRMQetRinciHprsKJYKeELqQ&oe=65FF1CA5&_nc_sid=000000
+                          mediaKeyTimestamp: 1708173119
+                          jpegThumbnail: >-
+                            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
+                          contextInfo:
+                            disappearingMode:
+                              initiator: 0
+                          viewOnce: false
+              partial3:
+                summary: Exemplo 3 - Definição do ID e Menção
+                value:
+                  recipient: 123@g.us
+                  mediaMessage:
+                    caption: >-
+                      Exemplo parcial com a definição do id da mensagem e menção
+                      e um grupo
+                    url: >-
+                      https://as1.ftcdn.net/v2/jpg/02/73/22/74/1000_F_273227473_N0WRQuX3uZCJJxlHKYZF44uaJAkh2xLG.jpg
+                    mediatype: image
+                  optionsMessage:
+                    messageId: adbd8fe6-8c44-442b-8c26-b585345b6a52
+                    delay: 1200
+                    presence: composing
+                    groupMention:
+                      hiddenMention: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseMessage'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_6
+      security: *ref_7
+  /instance/{instanceId}/send/media-file:
+    post:
+      operationId: SendMessageController_mediaFile
+      summary: Mensagem de Mídia - Arquivo
+      description: >-
+        ### Mensagem de Mídia - Arquivo
+
+
+        Envie mídias em geral para o Whatsapp, como: imagens, vídeos, adesivos,
+        áudios e documentos.
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      requestBody:
+        required: true
+        description: >-
+          `multipart/form-data` é um dos tipos de conteúdo utilizados em
+          solicitações HTTP para envio de dados, principalmente arquivos
+          binários como imagens, vídeos, áudios, documentos e outros tipos de
+          mídia. Esse tipo de conteúdo é amplamente utilizado quando você
+          precisa passar informações estruturadas, incluindo arquivos binários,
+          por meio de formulários em páginas da web.
+
+
+          Ao enviar dados com o tipo multipart/form-data, a solicitação é
+          dividida em diversas partes, ou seja, é “multipart”. Cada parte contém
+          um cabeçalho que descreve o tipo e o conteúdo dos dados, e o próprio
+          corpo dos dados, que contém o arquivo binário ou outros campos do
+          formulário. As partes são separadas por uma sequência especial de
+          caracteres que funciona como delimitador, geralmente definida na
+          solicitação.
+
+
+          Em resumo, multipart/form-data é um tipo de conteúdo utilizado para
+          enviar dados, incluindo arquivos binários, por meio de solicitações
+          HTTP, permitindo a transmissão segura e eficiente de informações
+          estruturadas entre clientes e servidores.
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - attachment
+                - mediatype
+                - recipient
+              properties:
+                recipient:
+                  type: string
+                  description: Destinatário da mensagem
+                  title: Recipient
+                attachment:
+                  type: string
+                  format: binary
+                  description: Arquivo de mídia
+                  title: Attachment
+                mediatype:
+                  type: string
+                  enum:
+                    - image
+                    - video
+                    - document
+                    - sticker
+                    - audio
+                  description: Escolha o tipo de comida a ser enviada.
+                  title: Media type
+                caption:
+                  type: string
+                  description: Defina uma legenda para sua imagem.
+                  title: Caption
+                messageId:
+                  type: string
+                  description: >-
+                    Defina o identificador da mensagem ou, caso o deixe nulo,
+                    indefinido ou vazio, a aplicação automaticamente gerará um
+                    para você.
+                  title: Message ID
+                delay:
+                  type: integer
+                  description: >-
+                    Define o atraso com que a mensagem será enviada em
+                    milissegundos.
+                  default: 1200
+                  title: Delay
+                presence:
+                  type: string
+                  enum:
+                    - composing
+                    - recording
+                  description: >-
+                    Define o comportamento do número conectado ao enviar a
+                    mensagem no chat
+                  default: composing
+                  title: Presence
+                groupMentionHidden:
+                  type: boolean
+                  description: >-
+                    Este parâmetro permite mencionar todos os membros de um
+                    grupo sem referenciá-los diretamente.
+                  title: Group Mention Hidden
+                quotedMessage:
+                  type: object
+                  title: Quoted Message
+                  description: >-
+                    Propriedades da mensagem de citação.
+
+
+                    * `messageiId`: ID da mensagem que deseja citar
+
+                    * `sender`: O (recipient | jid | remoteJid) responsável que
+                    enviou a mensagem que deseja citar.
+
+                    * `message`: O conteúdo da mensagem a ser citada
+                  example:
+                    messageId: 3EB0FD55D8B4306B0977B2
+                    sender: 123@s.whatsapp.net
+                    message:
+                      conversation: Olá
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseMessage'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_6
+      security: *ref_7
+  /instance/{instanceId}/send/audio:
+    post:
+      operationId: SendMessageController_audio
+      summary: Mensagem de Áudio
+      description: >-
+        ### Mensagem de Áudio
+
+
+        Este endpoint especializado permitirá enviar áudio como se estivesse
+        gravando diretamente no aplicativo WhatsApp.
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AudioMessage'
+            examples:
+              model:
+                summary: Modelo
+                value:
+                  recipient: string
+                  audioMessage:
+                    url: string
+                  optionsMessage:
+                    messageId: string
+                    delay: 0
+                    quotedMessage:
+                      messageId: string
+                      sender: string
+                      message: {}
+                    groupMention:
+                      hiddenMention: true
+              basic:
+                summary: Básico
+                value:
+                  recipient: '5531911111111'
+                  audioMessage:
+                    url: >-
+                      https://www.learningcontainer.com/download/sample-mp3-file/?wpdmdl=1676&refresh=65a01d0c1766e1704992012
+              partial1:
+                summary: Exemplo 1 - Definição do ID
+                value:
+                  recipient: '5531911111111'
+                  audioMessage:
+                    url: >-
+                      https://www.learningcontainer.com/download/sample-mp3-file/?wpdmdl=1676&refresh=65a01d0c1766e1704992012
+                  optionsMessage:
+                    messageId: adbd8fe6-8c44-442b-8c26-b585345b6a52
+                    delay: 1200
+              partial2:
+                summary: Exemplo 2 - Citação
+                value:
+                  recipient: '5531911111111'
+                  audioMessage:
+                    url: >-
+                      https://www.learningcontainer.com/download/sample-mp3-file/?wpdmdl=1676&refresh=65a01d0c1766e1704992012
+                  optionsMessage:
+                    delay: 1200
+                    presence: composing
+                    quotedMessage:
+                      messageId: 3EB0FD55D8B4306B0977B2
+                      sender: 123@s.whatsapp.net
+                      message:
+                        conversation: Olá
+              partial3:
+                summary: Exemplo 3 - Definição do ID e Menção
+                value:
+                  recipient: 123@g.us
+                  audioMessage:
+                    url: >-
+                      https://www.learningcontainer.com/download/sample-mp3-file/?wpdmdl=1676&refresh=65a01d0c1766e1704992012
+                  optionsMessage:
+                    messageId: adbd8fe6-8c44-442b-8c26-b585345b6a52
+                    delay: 1200
+                    presence: composing
+                    groupMention:
+                      hiddenMention: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseMessage'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_6
+      security: *ref_7
+  /instance/{instanceId}/send/audio-file:
+    post:
+      operationId: SendMessageController_audioFile
+      summary: Mensagem de Áudio - Arquivo
+      description: >-
+        ### Mensagem de Áudio - Arquivo
+
+
+        Este endpoint especializado permitirá que você envie um arquivo de áudio
+        como se estivesse gravando diretamente no aplicativo WhatsApp.
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - attachment
+                - recipient
+              properties:
+                recipient:
+                  type: string
+                  description: Destinatário da mensagem
+                  title: Recipient
+                attachment:
+                  type: string
+                  format: binary
+                  description: Arquivo de mídia
+                  title: Attachment
+                delay:
+                  type: integer
+                  description: >-
+                    Define o atraso com que a mensagem será enviada em
+                    milissegundos.
+                  default: 1200
+                  title: Delay
+                groupMentionHidden:
+                  type: boolean
+                  description: >-
+                    Este parâmetro permite mencionar todos os membros de um
+                    grupo sem referenciá-los diretamente.
+                  title: Group Mention Hidden
+                quotedMessage:
+                  type: object
+                  title: Quoted Message
+                  description: >-
+                    Propriedades da mensagem de citação.
+
+
+                    * `messageiId`: ID da mensagem que deseja citar
+
+                    * `sender`: O (recipient | jid | remoteJid) responsável que
+                    enviou a mensagem que deseja citar.
+
+                    * `message`: O conteúdo da mensagem a ser citada
+                  example:
+                    messageId: 3EB0FD55D8B4306B0977B2
+                    sender: 123@s.whatsapp.net
+                    message:
+                      conversation: Olá
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseMessage'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_6
+      security: *ref_7
+  /instance/{instanceId}/send/ptv:
+    post:
+      operationId: SendMessageController_ptv
+      summary: Mensagem de Ptv
+      description: >-
+        ### Mensagem de Ptv
+
+
+        Este endpoint especializado permitirá enviar vídeo como se estivesse
+        gravando diretamente no aplicativo WhatsApp.
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PtvMessage'
+            examples:
+              model:
+                summary: Modelo
+                value:
+                  recipient: string
+                  ptvMessage:
+                    url: string
+                  optionsMessage:
+                    messageId: string
+                    delay: 0
+                    quotedMessage:
+                      messageId: string
+                      sender: string
+                      message: {}
+                    groupMention:
+                      hiddenMention: true
+              basic:
+                summary: Básico
+                value:
+                  recipient: '5531911111111'
+                  ptvMessage:
+                    url: >-
+                      https://www.learningcontainer.com/download/sample-mp3-file/?wpdmdl=1676&refresh=65a01d0c1766e1704992012
+              partial1:
+                summary: Exemplo 1 - Definição do ID
+                value:
+                  recipient: '5531911111111'
+                  ptvMessage:
+                    url: >-
+                      https://edisciplinas.usp.br/pluginfile.php/5196097/mod_resource/content/1/Teste.mp4
+                  optionsMessage:
+                    messageId: adbd8fe6-8c44-442b-8c26-b585345b6a52
+                    delay: 1200
+              partial2:
+                summary: Exemplo 2 - Citação
+                value:
+                  recipient: '5531911111111'
+                  ptvMessage:
+                    url: >-
+                      https://edisciplinas.usp.br/pluginfile.php/5196097/mod_resource/content/1/Teste.mp4
+                  optionsMessage:
+                    delay: 1200
+                    presence: composing
+                    quotedMessage:
+                      messageId: 3EB0FD55D8B4306B0977B2
+                      sender: 123@s.whatsapp.net
+                      message:
+                        conversation: Olá
+              partial3:
+                summary: Exemplo 3 - Definição do ID e Menção
+                value:
+                  recipient: 123@g.us
+                  ptvMessage:
+                    url: >-
+                      https://edisciplinas.usp.br/pluginfile.php/5196097/mod_resource/content/1/Teste.mp4
+                  optionsMessage:
+                    messageId: adbd8fe6-8c44-442b-8c26-b585345b6a52
+                    delay: 1200
+                    presence: composing
+                    groupMention:
+                      hiddenMention: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseMessage'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_6
+      security: *ref_7
+  /instance/{instanceId}/send/ptv-file:
+    post:
+      operationId: SendMessageController_ptvFile
+      summary: Mensagem de Ptv - Arquivo
+      description: >-
+        ### Mensagem de Ptv - Arquivo
+
+
+        Este endpoint especializado permitirá que você envie um arquivo de áudio
+        como se estivesse gravando diretamente no aplicativo WhatsApp.
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - attachment
+                - recipient
+              properties:
+                recipient:
+                  type: string
+                  description: Destinatário da mensagem
+                  title: Recipient
+                attachment:
+                  type: string
+                  format: binary
+                  description: Arquivo de mídia
+                  title: Attachment
+                delay:
+                  type: integer
+                  description: >-
+                    Define o atraso com que a mensagem será enviada em
+                    milissegundos.
+                  default: 1200
+                  title: Delay
+                groupMentionHidden:
+                  type: boolean
+                  description: >-
+                    Este parâmetro permite mencionar todos os membros de um
+                    grupo sem referenciá-los diretamente.
+                  title: Group Mention Hidden
+                quotedMessage:
+                  type: object
+                  title: Quoted Message
+                  description: >-
+                    Propriedades da mensagem de citação.
+
+
+                    * `messageiId`: ID da mensagem que deseja citar
+
+                    * `sender`: O (recipient | jid | remoteJid) responsável que
+                    enviou a mensagem que deseja citar.
+
+                    * `message`: O conteúdo da mensagem a ser citada
+                  example:
+                    messageId: 3EB0FD55D8B4306B0977B2
+                    sender: 123@s.whatsapp.net
+                    message:
+                      conversation: Olá
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseMessage'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_6
+      security: *ref_7
+  /instance/{instanceId}/send/contact:
+    post:
+      operationId: SendMessageController_contact
+      summary: Mensagem de Contato
+      description: |-
+        ### Mensagem de Contato
+
+        Permite o compartilhamento de informações de contato.
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactMessage'
+            examples:
+              model:
+                summary: Modelo
+                value:
+                  recipient: string
+                  contactMessage:
+                    - fullName: string
+                      rawNumber: string
+                      phoneNumber: string
+                  optionsMessage:
+                    messageId: string
+                    delay: 0
+                    presence: composing
+                    quotedMessage:
+                      messageId: string
+                      sender: string
+                      message: {}
+                    groupMention:
+                      hiddenMention: true
+              basic:
+                summary: Básico
+                value:
+                  recipient: '5531911111111'
+                  contactMessage:
+                    - fullName: CodeChat Admin
+                      rawNumber: '5531911111111'
+                      phoneNumber: +55 31 9 1111-1111
+              partial1:
+                summary: Exemplo 1 - Definição do ID
+                value:
+                  recipient: '5531911111111'
+                  contactMessage:
+                    - fullName: CodeChat Admin
+                      rawNumber: '5531911111111'
+                      phoneNumber: +55 31 9 1111-1111
+                    - fullName: CodeChat Support
+                      rawNumber: '5531922222222'
+                      phoneNumber: +55 31 9 2222-2222
+                  optionsMessage:
+                    messageId: adbd8fe6-8c44-442b-8c26-b585345b6a52
+                    delay: 1200
+              partial2:
+                summary: Exemplo 2 - Citação
+                value:
+                  recipient: '5531911111111'
+                  contactMessage:
+                    - fullName: CodeChat Admin
+                      rawNumber: '5531911111111'
+                      phoneNumber: +55 31 9 1111-1111
+                    - fullName: CodeChat Support
+                      rawNumber: '5531922222222'
+                      phoneNumber: +55 31 9 2222-2222
+                  optionsMessage:
+                    messageId: adbd8fe6-8c44-442b-8c26-b585345b6a52
+                    delay: 1200
+                    quotedMessage:
+                      messageId: 3EB0FD55D8B4306B0977B2
+                      sender: 123@s.whatsapp.net
+                      message:
+                        imageMessage:
+                          url: >-
+                            https://mmg.whatsapp.net/o1/v/t62.7118-24/f1/m234/up-oil-image-d16c99b3-0158-4d04-a7e1-ae0b17207c68?ccb=9-4&oh=01_AdT0G6SXTp3Hfkqlekfw4S9v23zmbK8YQNVRk3ypySmEOg&oe=65F814A5&_nc_sid=000000&mms3=true
+                          mimetype: image/jpeg
+                          caption: Test
+                          fileSha256: RjDdX6soZbuI2PD+pnLZC3FeBY5SY63Gcxgw0SY7L5I=
+                          fileLength: 199221
+                          height: 1600
+                          width: 914
+                          mediaKey: PPfTAq0qO4Q78u0Nhe/Iu+gc5WV0KNLOqYU/Q+bhhIY=
+                          fileEncSha256: N5dmUTcSmnnN486ziRAhMviWwD7Gi2g+RfnBZmC4bZs=
+                          directPath: >-
+                            /o1/v/t62.7118-24/f1/m234/up-oil-image-d16c99b3-0158-4d04-a7e1-ae0b17207c68?ccb=9-4&oh=01_AdSFDJMyBt3jJ2xrrQC8FskRMQetRinciHprsKJYKeELqQ&oe=65FF1CA5&_nc_sid=000000
+                          mediaKeyTimestamp: 1708173119
+                          jpegThumbnail: >-
+                            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
+                          contextInfo:
+                            disappearingMode:
+                              initiator: 0
+                          viewOnce: false
+              partial3:
+                summary: Exemplo 3 - Definição do ID e Menção
+                value:
+                  recipient: 123@g.us
+                  contactMessage:
+                    - fullName: CodeChat Admin
+                      rawNumber: '5531911111111'
+                      phoneNumber: +55 31 9 1111-1111
+                    - fullName: CodeChat Support
+                      rawNumber: '5531922222222'
+                      phoneNumber: +55 31 9 2222-2222
+                    - fullName: CodeChat Dev
+                      rawNumber: '5531933333333'
+                      phoneNumber: +55 31 9 3333-3333
+                  optionsMessage:
+                    messageId: adbd8fe6-8c44-442b-8c26-b585345b6a52
+                    delay: 1200
+                    presence: composing
+                    groupMention:
+                      hiddenMention: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseMessage'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_6
+      security: *ref_7
+  /instance/{instanceId}/send/location:
+    post:
+      operationId: SendMessageController_location
+      summary: Mensagen de Localização
+      description: |-
+        ### Mensagem de localização
+
+        Compartilha uma localização qualquer.
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationMessage'
+            examples:
+              model:
+                summary: Modelo
+                value:
+                  recipient: string
+                  locationMessage:
+                    name: string
+                    address: string
+                    Comment: string
+                    latitude: 0
+                    longitude: 0
+                  optionsMessage:
+                    messageId: string
+                    delay: 0
+                    presence: composing
+                    quotedMessage:
+                      messageId: string
+                      sender: string
+                      message: {}
+                    groupMention:
+                      hiddenMention: true
+              basic:
+                summary: Básico
+                value:
+                  recipient: '5531911111111'
+                  locationMessage:
+                    latitude: -20.3331946
+                    longitude: -44.0604606
+              partial1:
+                summary: Exemplo 1 - Definição do ID
+                value:
+                  recipient: '5531911111111'
+                  locationMessage:
+                    name: Moeda - MG
+                    address: 🗺️ Moeda 🗺️
+                    latitude: -20.3331946
+                    longitude: -44.0604606
+                    comment: Small town
+                  optionsMessage:
+                    messageId: adbd8fe6-8c44-442b-8c26-b585345b6a52
+                    delay: 1200
+              partial2:
+                summary: Exemplo 2 - Citação
+                value:
+                  recipient: '5531911111111'
+                  locationMessage:
+                    name: Moeda - MG
+                    address: 🗺️ Moeda 🗺️
+                    latitude: -20.3331946
+                    longitude: -44.0604606
+                    comment: Small town
+                  optionsMessage:
+                    messageId: adbd8fe6-8c44-442b-8c26-b585345b6a52
+                    delay: 1200
+                    quotedMessage:
+                      messageId: 3EB0FD55D8B4306B0977B2
+                      sender: 123@s.whatsapp.net
+                      message:
+                        imageMessage:
+                          url: >-
+                            https://mmg.whatsapp.net/o1/v/t62.7118-24/f1/m234/up-oil-image-d16c99b3-0158-4d04-a7e1-ae0b17207c68?ccb=9-4&oh=01_AdT0G6SXTp3Hfkqlekfw4S9v23zmbK8YQNVRk3ypySmEOg&oe=65F814A5&_nc_sid=000000&mms3=true
+                          mimetype: image/jpeg
+                          caption: Test
+                          fileSha256: RjDdX6soZbuI2PD+pnLZC3FeBY5SY63Gcxgw0SY7L5I=
+                          fileLength: 199221
+                          height: 1600
+                          width: 914
+                          mediaKey: PPfTAq0qO4Q78u0Nhe/Iu+gc5WV0KNLOqYU/Q+bhhIY=
+                          fileEncSha256: N5dmUTcSmnnN486ziRAhMviWwD7Gi2g+RfnBZmC4bZs=
+                          directPath: >-
+                            /o1/v/t62.7118-24/f1/m234/up-oil-image-d16c99b3-0158-4d04-a7e1-ae0b17207c68?ccb=9-4&oh=01_AdSFDJMyBt3jJ2xrrQC8FskRMQetRinciHprsKJYKeELqQ&oe=65FF1CA5&_nc_sid=000000
+                          mediaKeyTimestamp: 1708173119
+                          jpegThumbnail: >-
+                            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
+                          contextInfo:
+                            disappearingMode:
+                              initiator: 0
+                          viewOnce: false
+              partial3:
+                summary: Exemplo 3 - Definição do ID e Menção
+                value:
+                  recipient: 123@g.us
+                  locationMessage:
+                    name: Moeda - MG
+                    address: 🗺️ Moeda 🗺️
+                    latitude: -20.3331946
+                    longitude: -44.0604606
+                    comment: Small town
+                  optionsMessage:
+                    messageId: adbd8fe6-8c44-442b-8c26-b585345b6a52
+                    delay: 1200
+                    presence: composing
+                    groupMention:
+                      hiddenMention: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseMessage'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_6
+      security: *ref_7
+  /instance/{instanceId}/send/reaction:
+    patch:
+      operationId: SendMessageController_reaction
+      summary: Reação à Mensagem
+      description: |-
+        ### Reação à Mensagem
+
+        Reaja a uma mensagem com algum emoji
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReactionMessage'
+            examples:
+              model:
+                summary: Modelo
+                value:
+                  recipient: string
+                  messageKey:
+                    chatId: string
+                    messageId: string
+                    fromMe: true
+                  reactionMessage:
+                    Reaction: string
+              basic:
+                summary: Básico
+                value:
+                  recipient: '5531911111111'
+                  messageKey:
+                    chatId: 127@s.whatsapp.net
+                    messageId: 3EB0FD55D8B4306B0977B2
+                    fromMe: false
+                  reactionMessage:
+                    reaction: 🐛
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseMessage'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_6
+      security: *ref_7
+  /instance/{instanceId}/send/edit:
+    patch:
+      operationId: SendMessageController_edit
+      summary: Edição de Mensagem
+      description: >-
+        ### Edição de Mensagem
+
+
+        Este endpoint foi projetado para enviar edições mensagens individuais em
+        uma instância específica, facilitando a atualização de mensagens no
+        aplicativo WhatsApp.
+
+
+        **OBS:** O limite de tempo para a edição de uma mensagem é de 15min.
+      parameters:
+        - name: instance
+          required: true
+          in: path
+          description: >-
+            Referência do número conectado. Podendo ser: o `id` | `nome` |
+            `número` da instância
+          schema:
+            title: Instance
+            type: string
+      requestBody:
+        required: true
+        description: >-
+          O corpo da solicitação deve ser um objeto JSON contendo os parâmetros
+          necessários para edição da mensagem.
+
+
+          * `editMessage`: Objeto que encapsula os detalhes da mensagem a ser
+          editada.
+            - `messageId`: Id da mensagem a ser atualizada;
+            - `text`: Texto da mensagem atualizado.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditMessage'
+            examples:
+              model:
+                summary: Modelo
+                value:
+                  recipient: string
+                  editMessage:
+                    messageId: string
+                    text: string
+              basic:
+                summary: Básico
+                value:
+                  recipient: '5531911111111'
+                  editMessage:
+                    messageId: 3EB0FD55D8B4306B0977B2
+                    text: Edited
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseMessage'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUnauthorized'
+      tags: *ref_6
+      security: *ref_7
+info:
+  title: CodeChat Api
+  description: "# Introdução\r\n\r\nBem-vindo à documentação da API WhatsApp, sua porta de entrada para uma integração robusta e eficiente com o serviço de mensagens mais popular do mundo. Esta API foi cuidadosamente projetada para desenvolvedores que desejam ampliar as funcionalidades do WhatsApp, permitindo a criação de experiências de comunicação ricas e personalizadas em suas próprias aplicações.\r\n\r\nCom a API WhatsApp, você tem o poder de integrar uma vasta gama de serviços de mensagens, gerenciamento de instâncias e eventos em tempo real diretamente na sua aplicação. Nossa API oferece flexibilidade, escalabilidade e a eficiência necessárias para atender às necessidades do seu projeto, seja ele pequeno ou grande.\r\n\r\n## Componentes Principais da API\r\n\r\nA API é composta por vários controladores, cada um dedicado a uma parte específica da integração com o WhatsApp. Abaixo, destacamos os componentes principais:\r\n\r\n##\r\n\r\nGerencie o ciclo de vida das instâncias do WhatsApp, incluindo a criação, recuperação e exclusão de instâncias. Este controlador é fundamental para o gerenciamento eficiente de recursos e escalabilidade do serviço.\r\n\r\n##\r\n\r\nOrquestre o envio de uma variedade de tipos de mensagens, incluindo texto, links, mídia, áudios, contatos, mensagens protegidas por visualização única, localizações e listas. Este controlador é a espinha dorsal da comunicação, garantindo que você possa enviar mensagens de forma flexível e eficiente.\r\n\r\n### Controlador de Webhooks\r\n\r\nConfigure e gerencie webhooks para receber notificações de eventos em tempo real, uma peça chave para manter sua aplicação sincronizada com as atividades do WhatsApp. Os webhooks permitem que sua aplicação responda de forma ágil a mensagens recebidas, atualizações de status e outros eventos relevantes.\r\n\r\n##\r\n\r\nAdministre todas as configurações e estados do número do WhatsApp vinculado à sua aplicação, incluindo a conexão do número, personalização do perfil e gerenciamento de configurações de privacidade. Este controlador assegura que você mantenha total controle sobre a presença do seu número do WhatsApp na plataforma.\r\n\r\n---\r\nAguarde! Novas funcionalidade estão em andamento."
+  version: v3
+  contact:
+    name: jrcleber
+    url: https://cloudzapi.com
+    email: cleber@codechat.dev
+tags:
+  - name: 'Controlador de Instância'
+    description: "# Controlador de Instância\r\n\r\nO Instance Controller é responsável por gerenciar o ciclo de vida das instâncias do WhatsApp dentro do aplicativo. Ele fornece endpoints para criar, recuperar e excluir instâncias, permitindo gerenciamento eficiente de recursos e escalabilidade de serviço."
+  - name: 'Controlador de webhook'
+    description: "\r\n\r\nO Webhooks Controller foi projetado para permitir que os usuários configurem e gerenciem webhooks, que são essenciais para receber notificações de eventos em tempo real. Webhooks fornecem uma maneira para o servidor notificar a aplicação cliente sobre eventos específicos, como novas mensagens, atualizações de status, entre outros.\r\n\r\n### Considerações de uso\r\n\r\n* Ao configurar webhooks, é fundamental fornecer uma URL que seja acessível e capaz de lidar com notificações enviadas pelo servidor.\r\n\r\n* Os usuários devem garantir que seus sistemas estejam preparados para processar as notificações recebidas com eficiência.\r\n\r\n* Limites e restrições podem ser aplicados à frequência e ao tamanho das notificações para garantir a estabilidade e o desempenho do sistema."
+  - name: 'Páginas de Visualizações'
+    description: ''
+  - name: 'Controlador WhatsApp'
+    description: "# Controlador WhatsApp\r\n\r\nO Controlador WhatsApp é responsável por administrar todas as configurações e estados do número do WhatsApp conectado à aplicação. Ele fornece endpoints para conectar um número, personalizar o perfil e gerenciar configurações de privacidade e visibilidade."
+  - name: 'Controlador de Envio de Mensagens'
+    description: "# Controlador de Envio de Mensagens\r\n\r\nO Controlador de Envio de Mensagens é o componente central responsável pela orquestração do envio de diversos tipos de mensagens via WhatsApp, incluindo texto, links, mídias (imagens, vídeos), áudios, contatos, mensagens protegidas por visualização única (PTV), localizações e listas. Ele oferece endpoints específicos para cada tipo de mensagem, garantindo flexibilidade e eficiência na comunicação.\r\n"
+  - name: '[6]'
+    description: ''
+  - name: '[7]'
+    description: ''
+  - name: '[8]'
+    description: ''
+  - name: '[9]'
+    description: ''
+  - name: '[10]'
+    description: ''
+servers:
+  - url: https://apiv3.codechat.dev/api/v3/{instance}
+    description: ''
+    variables:
+      instance:
+        default: codechat
+components:
+  securitySchemes:
+    InstanceKey:
+      type: apiKey
+      in: header
+      name: apikey
+      description: Authentication key generated after completing the registration
+  schemas:
+    WhatsAppResponse:
+      type: object
+      properties:
+        number:
+          type: string
+        pictureUrl:
+          type: string
+        pushName:
+          type: string
+        lastConnection:
+          format: date-time
+          type: string
+      required:
+        - number
+        - pictureUrl
+        - pushName
+        - lastConnection
+    InstanceResponse:
+      type: object
+      properties:
+        instanceId:
+          type: string
+        name:
+          type: string
+        state:
+          type: string
+          enum: &ref_8
+            - active
+            - inactive
+        status:
+          type: string
+          default: waiting
+        connection:
+          type: string
+          default: close
+        createdAt:
+          format: date-time
+          type: string
+        deletedAt:
+          format: date-time
+          type: string
+        WhatsApp:
+          allOf:
+            - $ref: '#/components/schemas/WhatsAppResponse'
+      required:
+        - instanceId
+        - name
+        - state
+        - status
+        - connection
+        - createdAt
+        - deletedAt
+        - WhatsApp
+    ResponseBadRequest:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          default: 400
+        message:
+          type: array
+          items:
+            type: string
+        error:
+          type: string
+          default: Bad Request
+      required:
+        - statusCode
+        - message
+        - error
+    ResponseUnauthorized:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          default: 401
+        error:
+          type: string
+          default: Unauthorized
+      required:
+        - statusCode
+        - error
+    WebhookDto:
+      type: object
+      properties:
+        name:
+          type: string
+          title: Name
+        url:
+          type: string
+          title: Url
+        enabled:
+          type: boolean
+          title: Enabled
+      required:
+        - name
+        - url
+        - enabled
+    WebhookEventsDto:
+      type: object
+      properties:
+        appState:
+          type: boolean
+          title: App State
+          default: true
+        appStateSyncComplete:
+          type: boolean
+          title: AppStateSyncComplete
+          default: false
+        archiveChat:
+          type: boolean
+          title: Archive Chat
+          default: false
+        blockList:
+          type: boolean
+          title: Block List
+          default: false
+        profilePushNameBusiness:
+          type: boolean
+          title: Profile PushName Business
+          default: false
+        callAccept:
+          type: boolean
+          title: Call Accept
+          default: false
+        callOffer:
+          type: boolean
+          title: Call Offer
+          default: false
+        callPreAccept:
+          type: boolean
+          title: Call Pre accept
+          default: false
+          deprecated: true
+        callOfferNotice:
+          type: boolean
+          title: Call Offer Notice
+          default: false
+        callRelayLatency:
+          type: boolean
+          title: Call Relay Latency
+          default: false
+        callTerminate:
+          type: boolean
+          title: Call Terminate
+          default: false
+        callTransport:
+          type: boolean
+          title: Call Transport
+          default: false
+          deprecated: true
+        presenceUpdate:
+          type: boolean
+          title: Presence Update
+          default: true
+        chatClear:
+          type: boolean
+          title: Chat Clear
+          default: false
+        clientOutdated:
+          type: boolean
+          title: Client Outdated
+          default: true
+        connectFailure:
+          type: boolean
+          title: Connect Failure
+          default: true
+        whatsappConnected:
+          type: boolean
+          title: Whatsapp Connected
+          default: true
+        contactUpsert:
+          type: boolean
+          title: Contact Upsert
+          default: true
+        chatDelete:
+          type: boolean
+          title: Chat Delete
+          default: true
+        deleteForMe:
+          type: boolean
+          title: Delete For Me
+          default: true
+        websocketDisconnected:
+          type: boolean
+          title: Websocket Disconnected
+          default: true
+        groupUpdate:
+          type: boolean
+          title: Group Update
+          default: true
+        historySync:
+          type: boolean
+          title: History Sync
+          default: true
+        identityChange:
+          type: boolean
+          title: Identity Change
+          default: false
+        keepAliveRestored:
+          type: boolean
+          title: Keep Alive Restored
+          default: false
+        keepAliveTimeout:
+          type: boolean
+          title: Keep Alive Timeout
+          default: false
+        labelAssociationChat:
+          type: boolean
+          title: Label Association Chat
+          default: false
+        labelAssociationMessage:
+          type: boolean
+          title: Label Association Message
+          default: false
+        labelEdit:
+          type: boolean
+          title: Label Edit
+          default: false
+        Logged Out:
+          type: boolean
+          title: loggedOut
+          default: true
+        mediaRetry:
+          type: boolean
+          title: Media Retry
+          default: false
+        markChatRead:
+          type: boolean
+          title: Mark Chat Read
+          default: true
+        mediaRetryError:
+          type: boolean
+          title: Media Retry Error
+          default: false
+        newMessage:
+          type: boolean
+          title: New Message
+          default: true
+        chatMute:
+          type: boolean
+          title: Chat Mute
+          default: false
+        offlineSyncComplete:
+          type: boolean
+          title: Offline Sync Complete
+          default: true
+        offlineSyncPreview:
+          type: boolean
+          title: Offline Sync Preview
+          default: true
+        pairError:
+          type: boolean
+          title: Pair Error
+          default: true
+        pairSuccess:
+          type: boolean
+          title: Pair Success
+          default: true
+        profilePicture:
+          type: boolean
+          title: Profile Picture
+          default: false
+        toggleChatUnpinned:
+          type: boolean
+          title: Toggle Chat Unpinned
+          default: false
+        toggleChatPinned:
+          type: boolean
+          title: Toggle Chat Pinned
+          default: false
+        privacySettings:
+          type: boolean
+          title: Privacy Settings
+          default: false
+        profilePushName:
+          type: boolean
+          title: Profile PushName
+          default: false
+        profilePushNameSettings:
+          type: boolean
+          title: Profile PushName Settings
+          default: false
+        qrcodeUpdate:
+          type: boolean
+          title: Qrcode Update
+          default: true
+        messageUpdate:
+          type: boolean
+          title: Message Update
+          default: true
+        messageStar:
+          type: boolean
+          title: Message Star
+          default: false
+        streamError:
+          type: boolean
+          title: Stream Error
+          default: true
+        streamReplaced:
+          type: boolean
+          title: Stream Replaced
+          default: true
+        temporaryBan:
+          type: boolean
+          title: Temporary Ban
+          default: true
+        chatSettingsArchived:
+          type: boolean
+          title: Chat Settings Archived
+          default: false
+        undecryptableMessage:
+          type: boolean
+          title: Undecryptable Message
+          default: true
+        unknownCall:
+          type: boolean
+          title: Unknown Call
+          default: true
+        userStatusMute:
+          type: boolean
+          title: User Status Mute
+          default: false
+    WebhookResponse:
+      type: object
+      properties:
+        webhookId:
+          type: string
+          title: Webhook ID
+        name:
+          type: string
+          title: Name
+        url:
+          type: string
+          title: Url
+        enabled:
+          type: boolean
+          title: Enabled
+        createdAt:
+          format: date-time
+          type: string
+          title: Created At
+        WebhookEvents:
+          title: Webhook Events
+          allOf:
+            - $ref: '#/components/schemas/WebhookEventsDto'
+      required:
+        - webhookId
+        - name
+        - url
+        - enabled
+        - createdAt
+        - WebhookEvents
+    WebhookUpDto:
+      type: object
+      properties:
+        name:
+          type: string
+          title: Name
+        url:
+          type: string
+          title: Url
+        enabled:
+          type: boolean
+          title: Enabled
+    ResponseConnect:
+      type: object
+      properties:
+        code:
+          type: string
+          title: Code
+          description: Credencial para autenticação do WhatsApp
+        base64:
+          type: string
+          title: Base64
+          description: Representação, em base64, da credencial de autenticação.
+        connection:
+          type: string
+          title: Connection
+          enum:
+            - close
+            - open
+            - refused
+          default: close
+          description: Demonstra o status da conexão no momento da chamada da requisição.
+      required:
+        - code
+        - base64
+        - connection
+    ResponseLogout:
+      type: object
+      properties:
+        instanceId:
+          type: string
+        name:
+          type: string
+        state:
+          type: string
+          enum: *ref_8
+        status:
+          type: string
+          default: waiting
+        connection:
+          type: string
+          default: close
+        createdAt:
+          format: date-time
+          type: string
+        deletedAt:
+          format: date-time
+          type: string
+      required:
+        - instanceId
+        - name
+        - state
+        - status
+        - connection
+        - createdAt
+        - deletedAt
+    QuotedMessage:
+      type: object
+      properties:
+        messageId:
+          type: string
+          title: Message ID
+          description: ID da mensagem que deseja citar
+        sender:
+          type: string
+          title: Sender
+          description: >-
+            O (recipient|jid|remoteJid) responsável que enviou a mensagem que
+            deseja citar.
+        message:
+          type: object
+          title: Message
+          description: O conteúdo da mensagem que deseja citar
+      required:
+        - messageId
+        - sender
+        - message
+    GroupMention:
+      type: object
+      properties:
+        hiddenMention:
+          type: boolean
+          title: Hidden Mention
+          description: Menção oculta ou menção fantasma.
+      required:
+        - hiddenMention
+    OptionsMessage:
+      type: object
+      properties:
+        messageId:
+          type: string
+          title: Message ID
+          description: >-
+            Defina o identificador da mensagem ou, caso o deixe nulo, indefinido
+            ou vazio, a aplicação automaticamente gerará um para você.
+        delay:
+          type: number
+          title: Delay
+          description: Define o atraso com que a mensagem será enviada em milissegundos.
+        presence:
+          type: string
+          title: Presence
+          enum:
+            - composing
+            - recording
+          description: >-
+            Define o comportamento do número conectado ao enviar a mensagem no
+            chat.
+
+
+            * **Valores:** composing | recording
+        quotedMessage:
+          title: Quoted Message
+          description: Propriedades da mensagem de citação.
+          allOf:
+            - $ref: '#/components/schemas/QuotedMessage'
+        groupMention:
+          title: GroupMention
+          description: Mencione ocultamente todos os participantes de um grupo.
+          allOf:
+            - $ref: '#/components/schemas/GroupMention'
+    Text:
+      type: object
+      properties:
+        text:
+          type: string
+          title: Text
+      required:
+        - text
+    TextMessage:
+      type: object
+      properties:
+        recipient:
+          type: string
+          title: Recipient
+          description: Destinatário da mensagem
+        optionsMessage:
+          title: Options Message
+          description: Opções para o envio da mensagem.
+          allOf:
+            - $ref: '#/components/schemas/OptionsMessage'
+        textMessage:
+          title: Text Message
+          allOf:
+            - $ref: '#/components/schemas/Text'
+      required:
+        - recipient
+        - textMessage
+    ResponseMessage:
+      type: object
+      properties:
+        messageId:
+          type: string
+          title: Message ID
+          description: Identificador da mensagem gerada.
+      required:
+        - messageId
+    Link:
+      type: object
+      properties:
+        link:
+          type: string
+          title: Link
+        Text:
+          type: string
+          title: Text
+          description: Texto opcional
+      required:
+        - link
+    LinkMessage:
+      type: object
+      properties:
+        recipient:
+          type: string
+          title: Recipient
+          description: Destinatário da mensagem
+        optionsMessage:
+          title: Options Message
+          description: Opções para o envio da mensagem.
+          allOf:
+            - $ref: '#/components/schemas/OptionsMessage'
+        linkMessage:
+          title: Link Message
+          allOf:
+            - $ref: '#/components/schemas/Link'
+      required:
+        - recipient
+        - linkMessage
+    Media:
+      type: object
+      properties:
+        caption:
+          type: string
+          title: Caption
+          description: adicione uma legenda à sua mensagem de mídia
+        url:
+          type: string
+          title: Media Url
+          description: Esta proriedade recebe a url da sua mídia.
+        mediatype:
+          type: string
+          title: Media Types
+          enum:
+            - audio
+            - document
+            - image
+            - video
+            - sticker
+          description: Defina o tipo da mídia a ser enviada.
+        filename:
+          type: string
+          title: File Name
+          description: Defina o nome do seu arquivo - opicional.
+      required:
+        - url
+        - mediatype
+    MediaMessage:
+      type: object
+      properties:
+        recipient:
+          type: string
+          title: Recipient
+          description: Destinatário da mensagem
+        optionsMessage:
+          title: Options Message
+          description: Opções para o envio da mensagem.
+          allOf:
+            - $ref: '#/components/schemas/OptionsMessage'
+        mediaMessage:
+          title: Media Message
+          allOf:
+            - $ref: '#/components/schemas/Media'
+      required:
+        - recipient
+        - mediaMessage
+    PartialOptions:
+      type: object
+      properties:
+        messageId:
+          type: string
+          title: Message ID
+          description: >-
+            Defina o identificador da mensagem ou, caso o deixe nulo, indefinido
+            ou vazio, a aplicação automaticamente gerará um para você.
+        delay:
+          type: number
+          title: Delay
+          description: Define o atraso com que a mensagem será enviada em milissegundos.
+        quotedMessage:
+          title: Quoted Message
+          description: Propriedades da mensagem de citação.
+          allOf:
+            - $ref: '#/components/schemas/QuotedMessage'
+        groupMention:
+          title: GroupMention
+          description: Mencione ocultamente todos os participantes de um grupo.
+          allOf:
+            - $ref: '#/components/schemas/GroupMention'
+    UrlMessage:
+      type: object
+      properties:
+        url:
+          type: string
+          title: Url
+          description: Envio de áudio tipo WhatsApp
+      required:
+        - url
+    AudioMessage:
+      type: object
+      properties:
+        recipient:
+          type: string
+          title: Recipient
+          description: Destinatário da mensagem
+        options:
+          title: Options
+          allOf:
+            - $ref: '#/components/schemas/PartialOptions'
+        audioMessage:
+          title: Audio Message
+          allOf:
+            - $ref: '#/components/schemas/UrlMessage'
+      required:
+        - recipient
+        - audioMessage
+    PtvMessage:
+      type: object
+      properties:
+        recipient:
+          type: string
+          title: Recipient
+          description: Destinatário da mensagem
+        options:
+          title: Options
+          allOf:
+            - $ref: '#/components/schemas/PartialOptions'
+        audioMessage:
+          title: Audio Message
+          allOf:
+            - $ref: '#/components/schemas/UrlMessage'
+      required:
+        - recipient
+        - audioMessage
+    Contact:
+      type: object
+      properties:
+        fullName:
+          type: string
+          title: Full Name
+        rawNumber:
+          type: string
+          title: Raw Number
+        phoneNumber:
+          type: string
+          title: Phone Number
+      required:
+        - fullName
+        - rawNumber
+        - phoneNumber
+    ContactMessage:
+      type: object
+      properties:
+        recipient:
+          type: string
+          title: Recipient
+          description: Destinatário da mensagem
+        optionsMessage:
+          title: Options Message
+          description: Opções para o envio da mensagem.
+          allOf:
+            - $ref: '#/components/schemas/OptionsMessage'
+        contactMessage:
+          title: Contact Message
+          description: Array da entidade contato
+          type: array
+          items:
+            $ref: '#/components/schemas/Contact'
+      required:
+        - recipient
+        - contactMessage
+    Location:
+      type: object
+      properties:
+        name:
+          type: string
+          title: Name
+          description: Nome da cidade/localização
+        address:
+          type: string
+          title: Address
+          description: Endereço da localização - ponto de referência
+        Comment:
+          type: string
+          title: Comment
+          description: Comentário adicional à localização
+        latitude:
+          type: number
+          title: Latitude
+        longitude:
+          type: number
+          title: Longitude
+      required:
+        - latitude
+        - longitude
+    LocationMessage:
+      type: object
+      properties:
+        recipient:
+          type: string
+          title: Recipient
+          description: Destinatário da mensagem
+        optionsMessage:
+          title: Options Message
+          description: Opções para o envio da mensagem.
+          allOf:
+            - $ref: '#/components/schemas/OptionsMessage'
+        locationMessage:
+          title: Location Message
+          description: Compartilha uma localização qualquer.
+          allOf:
+            - $ref: '#/components/schemas/Location'
+      required:
+        - recipient
+        - locationMessage
+    MessgeKey:
+      type: object
+      properties:
+        chatId:
+          type: string
+          title: Chat ID
+          description: A referência do chat para a reação.
+        messageId:
+          type: string
+          title: Message ID
+          description: ID da mensagem que deseja reagir.
+        fromMe:
+          type: boolean
+          title: From Me
+      required:
+        - chatId
+        - messageId
+        - fromMe
+    Reaction:
+      type: object
+      properties:
+        Reaction:
+          type: string
+          title: Reaction
+      required:
+        - Reaction
+    ReactionMessage:
+      type: object
+      properties:
+        recipient:
+          type: string
+          title: Recipient
+          description: Destinatário da mensagem
+        messageKey:
+          title: Message Key
+          allOf:
+            - $ref: '#/components/schemas/MessgeKey'
+        reactionMessage:
+          title: Reaction Message
+          allOf:
+            - $ref: '#/components/schemas/Reaction'
+      required:
+        - recipient
+        - messageKey
+        - reactionMessage
+    Edit:
+      type: object
+      properties:
+        text:
+          type: string
+          title: Text
+        messageId:
+          type: string
+          title: Message ID
+          description: ID da mensagem que deseja editar.
+      required:
+        - text
+        - messageId
+    EditMessage:
+      type: object
+      properties:
+        recipient:
+          type: string
+          title: Recipient
+          description: Destinatário da mensagem
+        editMessage:
+          title: Edit Message
+          allOf:
+            - $ref: '#/components/schemas/Edit'
+      required:
+        - recipient
+        - editMessage
