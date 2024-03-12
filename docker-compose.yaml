@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  go_codechat_api:
+    image: docker.io/full/codechat:go-v3
+    container_name: go_codechat_api
+    restart: always
+    environment:
+      - SERVER_PORT=8080
+      - SERVER_READ_TIMEOUT=30s
+      - SERVER_WRITE_TIMEOUT=30s
+      - JWT_EXPIRES=false
+      - DB_PATH=/data/sqlite
+      - DB_FILE=codechat.db
+      - DB_QUERY_URL=_foreign_keys=on
+      - AMQP_URL=amqp://user_codechat_v3:172839@rabbit_mq
+      - AMQP_VHOST=codechat_v3_go
+      - AMQP_QUEUE=ms_default
+      - BASE_ROUTER_MS_MANAGER=http://codechat_ms:8084/ms/v3
+      - GLOBAL_TOKEN=f{uoR8VG41EjOpkP7!ID;}tH9Xdd(%qxcU_A]{tMm1y4:/L+v/
+      - CONTAINER_NAME=291fb02f-810c-4065-87ee-58dd3e775944
+    networks:
+      - public_net
+    ports:
+      - 8080:8080
+    volumes:
+      - go_whatsapp_data:/data/sqlite
+
+volumes:
+  go_whatsapp_data:
+
+networks:
+  public_net:
+    external: true

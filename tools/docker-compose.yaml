@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  rabbit_mq:
+    image: rabbitmq:management
+    entrypoint: docker-entrypoint.sh
+    command: rabbitmq-server
+    restart: always
+    container_name: rabbit_mq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    hostname: rabbit_mq
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=123456
+      - RABBITMQ_DEFAULT_VHOST=default
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=123456
+    networks:
+      - public_net
+
+  postgres_db:
+    image: postgres:latest
+    networks:
+      - public_net
+    entrypoint: docker-entrypoint.sh
+    command: [postgres, --max_connections=200]
+    restart: always
+    container_name: postgres_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_INITDB_ARGS='--auth-host=scram-sha-256'
+
+volumes:
+  rabbitmq_data:
+  postgres_data:
+
+networks:
+  public_net:
+    external: true
