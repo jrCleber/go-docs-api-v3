@@ -2,10 +2,10 @@ package messaging
 
 import (
 	"encoding/json"
-	"log"
 
 	"codechat.dev/pkg/config"
 	"codechat.dev/pkg/utils"
+	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
@@ -14,17 +14,26 @@ var ExchangeName = "codechat_api_v3"
 type HandlerDelivery func(*amqp.Delivery)
 
 type Amqp struct {
-	Conn *amqp.Connection
-	Cfg  *config.AMQP
+	Conn       *amqp.Connection
+	cfg        *config.AMQP
+	prefixName string
+	logger     *logrus.Entry
 }
 
-func NewConnection(cfg *config.AMQP) (*Amqp, error) {
+func NewConnection(cfg *config.AMQP, containerName string) (*Amqp, error) {
 	conn, err := amqp.Dial(cfg.Url)
 	if err != nil {
 		return nil, err
 	}
 
-	m := Amqp{Conn: conn, Cfg: cfg}
+	logger := logrus.New()
+
+	m := Amqp{
+		Conn:       conn,
+		cfg:        cfg,
+		prefixName: containerName,
+		logger:     logger.WithFields(logrus.Fields{"name": "messaging"}),
+	}
 
 	return &m, nil
 }
@@ -32,7 +41,7 @@ func NewConnection(cfg *config.AMQP) (*Amqp, error) {
 func (m *Amqp) ConsumeMessages(queueName string, handler HandlerDelivery) {
 	ch, err := m.Conn.Channel()
 	if err != nil {
-		log.Println("Failed to open channel: ", err)
+		m.logger.Error("Failed to open channel: ", err)
 		return
 	}
 
@@ -46,7 +55,7 @@ func (m *Amqp) ConsumeMessages(queueName string, handler HandlerDelivery) {
 		nil,
 	)
 	if err != nil {
-		log.Println("Failed to register a consumer: ", err)
+		m.logger.Error("Failed to register a consumer: ", err)
 		return
 	}
 
@@ -58,14 +67,14 @@ func (m *Amqp) ConsumeMessages(queueName string, handler HandlerDelivery) {
 		}
 	}()
 
-	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	m.logger.Log(logrus.WarnLevel, "[*] Waiting for messages. To exit press CTRL+C")
 	<-forever
 }
 
 func (m *Amqp) SetupExchangesAndQueues(events []string) {
 	ch, err := m.Conn.Channel()
 	if err != nil {
-		log.Println("Failed to open channel: ", err)
+		m.logger.Error("Failed to open channel: ", err)
 		return
 	}
 	defer ch.Close()
@@ -73,30 +82,39 @@ func (m *Amqp) SetupExchangesAndQueues(events []string) {
 	err = ch.ExchangeDeclare(ExchangeName, "topic", true, false, false, false, nil)
 
 	if err != nil {
-		log.Println("Failed to declare an exchange: ", err)
+		m.logger.Error("Failed to declare an exchange: ", err)
 		return
 	}
 
-	for _, q := range m.Cfg.Queues {
-		queueName := utils.StringJoin("_", ExchangeName, q)
+	for _, q := range m.cfg.Queues {
+		queueName := utils.StringJoin("_", q, m.prefixName)
 		_, err = ch.QueueDeclare(queueName, true, false, false, false, nil)
 		if err != nil {
-			log.Printf("Failed to declare a queue for %s: %v", queueName, err)
+			m.logger.WithFields(logrus.Fields{
+				"queue": queueName,
+				"desc":  "queue declaration failed",
+			}).Error(err)
 			return
 		}
 
 		for _, evt := range events {
 			err = ch.QueueBind(queueName, evt, ExchangeName, false, nil)
 			if err != nil {
-				log.Printf("Failed to bind a queue for %s: %v", evt, err)
+				m.logger.WithFields(logrus.Fields{
+					"queue": queueName,
+					"event": evt,
+					"desc":  "failed to bind the queue",
+				}).Error(err)
 				return
 			}
 
-			log.Printf("Setup complete for exchange name: %s - Evt: %s", ExchangeName, evt)
+			m.logger.WithFields(logrus.Fields{
+				"exchange": ExchangeName,
+				"queue":    queueName,
+				"event":    evt,
+			}).Log(logrus.WarnLevel, "configuration complete")
 		}
 	}
-
-	return
 }
 
 func (m *Amqp) SendMessage(routingKey string, data any) {
@@ -105,14 +123,14 @@ func (m *Amqp) SendMessage(routingKey string, data any) {
 	}
 	ch, err := m.Conn.Channel()
 	if err != nil {
-		log.Println("Failed to open channel: ", err)
+		m.logger.Error(err)
 		return
 	}
 	defer ch.Close()
 
 	msgBytes, err := json.Marshal(data)
 	if err != nil {
-		log.Printf("Failed to marshal struct: %v", err)
+		m.logger.Errorf("Failed to marshal struct: %v", err)
 		return
 	}
 
@@ -122,11 +140,14 @@ func (m *Amqp) SendMessage(routingKey string, data any) {
 	})
 
 	if err != nil {
-		log.Printf("Failed to publish a message: %v", err)
+		m.logger.Errorf("Failed to publish a message: %v", err)
 		return
 	}
 
-	log.Printf("Message sent to exchange %s with routing key %s", ExchangeName, routingKey)
+	m.logger.WithFields(logrus.Fields{
+		"exchange":    ExchangeName,
+		"routing-key": routingKey,
+	}).Log(logrus.WarnLevel, "sent=true")
 }
 
 // func (m *Amqp) ExchangeDeleteAndQueues(exchangeName string) {

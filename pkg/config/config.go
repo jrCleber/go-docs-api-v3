@@ -36,16 +36,23 @@ type Route struct {
 	MsManager string
 }
 
-type AppConfig struct {
-	Server        *ServerConfig
-	Messaging     *AMQP
-	Jwt           *JwtConfig
-	GlobalToken   string
-	ContainerName string
-	Queues        []string
-	DbPath        *DbPath
-	Routes        *Route
+type Container struct {
+	ID   string
+	Name string
 }
+
+type AppConfig struct {
+	Server      *ServerConfig
+	Messaging   *AMQP
+	Jwt         *JwtConfig
+	GlobalToken string
+	Container   *Container
+	Queues      []string
+	DbPath      *DbPath
+	Routes      *Route
+}
+
+var GlobalWebhook string
 
 func DatabaseUrl(env DbPath) (string, error) {
 	dbPath := env.Path
@@ -111,7 +118,7 @@ func LoadConfig() (*AppConfig, error) {
 	}
 
 	dbPath := os.Getenv("DB_PATH")
-	fileName := os.Getenv("DB_FILE")
+	fileName := os.Getenv("CONTAINER_NAME") + ".db"
 	if dbPath == "" || fileName == "" {
 		return nil, errors.New("data file path not defined")
 	}
@@ -119,6 +126,8 @@ func LoadConfig() (*AppConfig, error) {
 	dbQuery := os.Getenv("DB_QUERY_URL")
 
 	amqpUrl := utils.StringJoin("/", os.Getenv("AMQP_URL"), os.Getenv("AMQP_VHOST"))
+
+	GlobalWebhook = os.Getenv("GLOBAL_WEBHOOK")
 
 	config := AppConfig{
 		Server: &ServerConfig{
@@ -141,7 +150,10 @@ func LoadConfig() (*AppConfig, error) {
 			MsManager: os.Getenv("BASE_ROUTER_MS_MANAGER"),
 		},
 		GlobalToken: os.Getenv("GLOBAL_TOKEN"),
-		ContainerName: os.Getenv("CONTAINER_NAME"),
+		Container: &Container{
+			ID:   os.Getenv("CONTAINER_ID"),
+			Name: os.Getenv("CONTAINER_NAME"),
+		},
 	}
 
 	return &config, nil

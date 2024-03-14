@@ -28,7 +28,11 @@ type appContext struct {
 }
 
 type Provider struct {
-	Ctx appContext
+	Ctx *appContext
+}
+
+func NewProvider() *Provider{
+	return &Provider{}
 }
 
 func App(provider *Provider) {
@@ -61,7 +65,7 @@ func App(provider *Provider) {
 
 	utils.DbUrl = dbUrl
 
-	msgClient, err := messaging.NewConnection(cfg.Messaging)
+	msgClient, err := messaging.NewConnection(cfg.Messaging, cfg.Container.Name)
 	if err != nil {
 		logger.Panic("amqp connection failed: ", err)
 	}
@@ -115,7 +119,6 @@ func App(provider *Provider) {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
 	logger.Info("Loaded middlewares")
-
 	authGuard := guards.NewAuthGuard(storage, cfg.GlobalToken)
 	instanceGuard := guards.NewInstanceGuard(&manager.Wa, storage, cfg.GlobalToken)
 
@@ -147,7 +150,7 @@ func App(provider *Provider) {
 
 	r.Mount("/api/v3", instanceRouter)
 
-	provider.Ctx = appContext{
+	provider.Ctx = &appContext{
 		Logger:  logger,
 		Cfg:     cfg,
 		Storage: storage,

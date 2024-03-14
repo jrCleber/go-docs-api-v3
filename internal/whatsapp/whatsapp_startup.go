@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"codechat.dev/pkg/config"
 	"codechat.dev/pkg/messaging"
 	"codechat.dev/pkg/utils"
 	"github.com/google/uuid"
@@ -83,6 +84,7 @@ type SendMessage struct {
 	Event    messaging.Events
 	Instance *Instance
 	Data     any
+	GlobalWebhook string
 }
 
 type ConnectionUpdate struct {
@@ -208,6 +210,7 @@ func PreparedMessage(evt messaging.Events, instance *Instance, value any) *SendM
 		Event:    evt,
 		Instance: instance,
 		Data:     value,
+		GlobalWebhook: config.GlobalWebhook,
 	}
 }
 
@@ -309,17 +312,11 @@ func (i *Instance) handlers(evt interface{}) {
 	case *events.CallOfferNotice:
 		client.SendMessage(string(messaging.CALL_OFFER_NOTICE), PreparedMessage(messaging.CALL_OFFER_NOTICE, i, value))
 		return
-	case *events.CallPreAccept:
-		client.SendMessage(string(messaging.CALL_PRE_ACCEPT), PreparedMessage(messaging.CALL_PRE_ACCEPT, i, value))
-		return
 	case *events.CallRelayLatency:
 		client.SendMessage(string(messaging.CALL_RELAY_LATENCY), PreparedMessage(messaging.CALL_RELAY_LATENCY, i, value))
 		return
 	case *events.CallTerminate:
 		client.SendMessage(string(messaging.CALL_TERMINATE), PreparedMessage(messaging.CALL_TERMINATE, i, value))
-		return
-	case *events.CallTransport:
-		client.SendMessage(string(messaging.CALL_TRANSPORT), PreparedMessage(messaging.CALL_TRANSPORT, i, value))
 		return
 	case *events.ChatPresence:
 		client.SendMessage(string(messaging.PRESENCE), PreparedMessage(messaging.PRESENCE, i, value))

@@ -61,7 +61,6 @@ func (x *Instance) Routers(routes ...InnerRouters) *chi.Mux {
 	for _, v := range routes {
 		r := v.Router
 		m := v.InstanceMiddleware
-		x.logger.Error(m)
 		path := x.rootPath + x.rootParam + v.Path
 		switch v := r.(type) {
 		case *SendMessage:

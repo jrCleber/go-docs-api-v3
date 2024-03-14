@@ -5,16 +5,15 @@ type Events string
 const (
 	APP_STATE                 Events = "app.state"
 	APP_STATE_SYNC_COMPLETE   Events = "app.state:sync-complete"
+	APP_STATUS                Events = "application.status"
 	ARCHIVE_CHAT              Events = "archive.chat"
 	BLOCK_LIST                Events = "block.list"
 	BUSINESS_NAME             Events = "profile.pushName:business"
 	CALL_ACCEPT               Events = "call.accept"
 	CALL_OFFER                Events = "call.offer"
 	CALL_OFFER_NOTICE         Events = "call.offer:notice"
-	CALL_PRE_ACCEPT           Events = "call.pre:accept"
 	CALL_RELAY_LATENCY        Events = "call.relay:latency"
 	CALL_TERMINATE            Events = "call.terminate"
-	CALL_TRANSPORT            Events = "call.transport"
 	CHAT_CLEAR                Events = "chat.clear"
 	CHAT_DELETE               Events = "chat.delete"
 	CHAT_PRESENCE             Events = "chat.presence"
@@ -24,13 +23,13 @@ const (
 	CONNECTED                 Events = "whatsapp.connected"
 	CONTACT                   Events = "contact.upsert"
 	DELETE_FOR_ME             Events = "delete.for:me"
+	DELETE_INSTANCE           Events = "delete.instance"
 	DISCONNECTED              Events = "websocket.disconnected"
 	INSTANCE_ERROR            Events = "instance.error"
 	GROUP_INFO                Events = "group.info"
 	HiSTORY_SYNC              Events = "history.sync"
 	IDENTITY_CHANGE           Events = "identity.change"
 	INSTANCE_STATUS           Events = "instance.status"
-	JOINED_GROUP              Events = "joined.group"
 	KEEP_ALIVE_RESTORED       Events = "keep.alive:restored"
 	KEEP_ALIVE_TIMEOUT        Events = "keep.alive:timeout"
 	LABEL_ASSOCIATION_CHAT    Events = "label.association:chat"
@@ -41,11 +40,7 @@ const (
 	MEDIA_RETRY               Events = "media.retry"
 	MEDIA_RETRY_ERROR         Events = "media.retry:error"
 	NEW_MESSAGE               Events = "new.message"
-	NEWS_LATTER_JOIN          Events = "news.latter:join"
-	NEWS_LATTER_LEAVE         Events = "news.latter:leave"
-	NEWS_LATTER_LIVE_UPDATE   Events = "news.latter:live-update"
-	NEWS_LATTER_MESSAGE_META  Events = "news.latter:message-meta"
-	NEWS_LATTER_MUTE_CHANGE   Events = "news.latter:mute-change"
+	NEW_INSTANCE              Events = "new.instance"
 	OFFLINE_SYNC_COMPLETED    Events = "offline.sync:completed"
 	OFFLINE_SYNC_PREVIEW      Events = "offline.sync:preview"
 	DEVICE_PARING             Events = "device.paring"
@@ -72,16 +67,15 @@ func (m *Amqp) SetQueues() {
 	m.SetupExchangesAndQueues([]string{
 		string(APP_STATE),
 		string(APP_STATE_SYNC_COMPLETE),
+		string(APP_STATUS),
 		string(ARCHIVE_CHAT),
 		string(BLOCK_LIST),
 		string(BUSINESS_NAME),
 		string(CALL_ACCEPT),
 		string(CALL_OFFER),
 		string(CALL_OFFER_NOTICE),
-		string(CALL_PRE_ACCEPT),
 		string(CALL_RELAY_LATENCY),
 		string(CALL_TERMINATE),
-		string(CALL_TRANSPORT),
 		string(CHAT_PRESENCE),
 		string(CHAT_CLEAR),
 		string(CHAT_DELETE),
@@ -92,12 +86,12 @@ func (m *Amqp) SetQueues() {
 		string(CONTACT),
 		string(CHAT_DELETE),
 		string(DELETE_FOR_ME),
+		string(DELETE_INSTANCE),
 		string(DISCONNECTED),
 		string(GROUP_INFO),
 		string(HiSTORY_SYNC),
 		string(IDENTITY_CHANGE),
 		string(INSTANCE_STATUS),
-		// string(JOINED_GROUP),
 		string(KEEP_ALIVE_RESTORED),
 		string(KEEP_ALIVE_TIMEOUT),
 		string(LABEL_ASSOCIATION_CHAT),
@@ -108,13 +102,9 @@ func (m *Amqp) SetQueues() {
 		string(MEDIA_RETRY),
 		string(MEDIA_RETRY_ERROR),
 		string(NEW_MESSAGE),
+		string(NEW_INSTANCE),
 		string(MESSAGE_STAR),
 		string(CHAT_MUTE),
-		// string(NEWS_LATTER_JOIN),
-		// string(NEWS_LATTER_LEAVE),
-		// string(NEWS_LATTER_LIVE_UPDATE),
-		// string(NEWS_LATTER_MESSAGE_META),
-		// string(NEWS_LATTER_MUTE_CHANGE),
 		string(OFFLINE_SYNC_COMPLETED),
 		string(OFFLINE_SYNC_PREVIEW),
 		string(DEVICE_PARING),

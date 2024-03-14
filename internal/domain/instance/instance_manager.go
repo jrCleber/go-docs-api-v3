@@ -50,6 +50,7 @@ func (x *InstancesManager) Load(service *Service) {
 		x.logger.Error(err)
 		return
 	}
+
 	for _, instance := range instances {
 		if instance.WhatsApp.Number == "" ||
 			instance.State == whatsapp.INACTIVE {

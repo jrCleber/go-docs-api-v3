@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -9,12 +10,13 @@ import (
 	"time"
 
 	"codechat.dev/internal"
+	"codechat.dev/pkg/messaging"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	provider := internal.Provider{}
-	internal.App(&provider)
+	provider := internal.NewProvider()
+	internal.App(provider)
 
 	defer provider.Ctx.Storage.Client.Close()
 	defer provider.Ctx.Amqp.Conn.Close()
@@ -33,14 +35,33 @@ func main() {
 		if err != nil && err != http.ErrServerClosed {
 			logger.WithFields(logrus.Fields{"error": err.Error()}).Fatal("server stopped")
 		}
+	}()
+
+	provider.Ctx.Amqp.SendMessage(string(messaging.APP_STATUS), map[string]any{
+		"instance": map[string]string{
+			"instanceId": provider.Ctx.Cfg.Container.ID,
+			"name":       provider.Ctx.Cfg.Container.Name,
+		},
+		"status": "on",
+	})
 
 	logger.WithFields(logrus.Fields{"port": srvPort}).Info("Server started")
 
+	fmt.Println("START")
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	sig := <-quit
+	os.Stdout.Sync()
 
-	logger.WithFields(logrus.Fields{"signal": sig}).Warn("Server shuting down")
+	provider.Ctx.Amqp.SendMessage(string(messaging.APP_STATUS), map[string]any{
+		"instance": map[string]string{
+			"instanceId": provider.Ctx.Cfg.Container.ID,
+			"name":       provider.Ctx.Cfg.Container.Name,
+		},
+		"status": "off",
+	})
+
+	logger.WithFields(logrus.Fields{"signal": sig}).Log(logrus.WarnLevel, "Server shuting down")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

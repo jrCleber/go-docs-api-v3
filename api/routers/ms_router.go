@@ -135,8 +135,6 @@ func (x *MsManager) Router() *chi.Mux {
 	router.Route("/webhook", func(r chi.Router) {
 		r.Use(guards.ApplyGuards(x.middle)...)
 
-		x.logger.Info(x.instanceMiddleware)
-
 		mimetype := "application/json"
 
 		h := handler.NewHandlerMiddleware()
