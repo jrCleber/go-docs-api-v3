@@ -33,7 +33,6 @@ func main() {
 		if err != nil && err != http.ErrServerClosed {
 			logger.WithFields(logrus.Fields{"error": err.Error()}).Fatal("server stopped")
 		}
-	}()
 
 	logger.WithFields(logrus.Fields{"port": srvPort}).Info("Server started")
 
