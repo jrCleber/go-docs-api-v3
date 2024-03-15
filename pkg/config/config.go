@@ -53,6 +53,7 @@ type AppConfig struct {
 }
 
 var GlobalWebhook string
+var LicenseKey string
 
 func DatabaseUrl(env DbPath) (string, error) {
 	dbPath := env.Path
@@ -128,6 +129,7 @@ func LoadConfig() (*AppConfig, error) {
 	amqpUrl := utils.StringJoin("/", os.Getenv("AMQP_URL"), os.Getenv("AMQP_VHOST"))
 
 	GlobalWebhook = os.Getenv("GLOBAL_WEBHOOK")
+	LicenseKey = os.Getenv("LICENSE_KEY")
 
 	config := AppConfig{
 		Server: &ServerConfig{

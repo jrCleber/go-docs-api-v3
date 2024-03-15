@@ -24,42 +24,8 @@ func NewInstance(service *instance.Service) *Instance {
 	}
 }
 
-func (h *Instance) PostInstanceCreate(r *http.Request) *Response {
-	var body contract.Instance
-	e := render.DecodeJSON(r.Body, &body)
-	if err := UnmarshalDescriptionError(e); err != nil {
-		return err
-	}
-
-	response := NewResponse(http.StatusBadRequest)
-
-	errs := validate.Struct(body)
-	if errs != nil {
-		response.Message = ErrorList(errs)
-		return response
-	}
-
-	data, status, err := h.service.Create(&body)
-	response.StatusCode = status
-	if err != nil {
-		response.Message = []any{
-			"Unable to create instance",
-			err.Error(),
-		}
-		response.StatusCode = http.StatusBadRequest
-		return response
-	}
-
-	response.Message = data
-	return response
-}
-
 func (h *Instance) GetInstance(r *http.Request) *Response {
-	param := chi.URLParam(r, "instance")
-
-	h.logger.Info(param)
-
-	data, status, err := h.service.Find(param)
+	data, status, err := h.service.Find()
 
 	response := NewResponse(status)
 
@@ -72,24 +38,8 @@ func (h *Instance) GetInstance(r *http.Request) *Response {
 	return response
 }
 
-func (h *Instance) GetAllInstance(r *http.Request) *Response {
-	data, status, err := h.service.FindAll()
-
-	response := NewResponse(status)
-
-	if err != nil {
-		response.Message = []string{err.Error()}
-		return response
-	}
-
-	response.Message = data
-	return response
-}
-
 func (h *Instance) GetInstanceConnect(r *http.Request) *Response {
-	param := chi.URLParam(r, "instance")
-
-	data, status, _, err := h.service.NewConnection(param)
+	data, status, _, err := h.service.NewConnection()
 
 	response := NewResponse(status)
 
@@ -106,9 +56,8 @@ func (h *Instance) GetInstanceConnect(r *http.Request) *Response {
 }
 
 func (h *Instance) PatchInstanceLogout(r *http.Request) *Response {
-	param := chi.URLParam(r, "instance")
 
-	data, status, err := h.service.Logout(param)
+	data, status, err := h.service.Logout()
 
 	response := NewResponse(status)
 

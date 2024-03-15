@@ -11,17 +11,17 @@ import (
 )
 
 type AuthGuard struct {
-	store       *whatsapp.Store
 	logger      *logrus.Entry
 	globalToken string
+	instance    *whatsapp.Instance
 }
 
-func NewAuthGuard(store *whatsapp.Store, globalToken string) *AuthGuard {
+func NewAuthGuard(instance *whatsapp.Instance, globalToken string) *AuthGuard {
 	logger := logrus.New()
 	return &AuthGuard{
 		logger:      logger.WithFields(logrus.Fields{"name": "auth-guard"}),
-		store:       store,
 		globalToken: globalToken,
+		instance:    instance,
 	}
 }
 
@@ -33,21 +33,14 @@ func (a *AuthGuard) CanActivate() func(next http.Handler) http.Handler {
 
 			param := chi.URLParam(r, "instance")
 
-			// auth := r.Header.Get("Authorization")
-
-			// if auth == "" {
-			// 	render.JSON(w, r, response.GetResponse())
-			// 	return
-			// }
-
-			// token := strings.Replace(auth, "Bearer ", "", 1)
-
-			// decode, err := a.Jwt.Read(&token)
-
-			// if err != nil || !a.Jwt.IsScope(decode.RoleAccess) || !a.Jwt.VerifyAttributes(decode) {
-			// 	render.JSON(w, r, response.GetResponse())
-			// 	return
-			// }
+			if param != a.instance.Name {
+				render.JSON(w, r, response.GetResponse())
+				a.logger.WithFields(logrus.Fields{
+					"param":        param,
+					"instanceName": a.instance.Name,
+				}).Error(response)
+				return
+			}
 
 			apikey := r.Header.Get("apikey")
 
@@ -55,13 +48,16 @@ func (a *AuthGuard) CanActivate() func(next http.Handler) http.Handler {
 
 			if apikey == "" {
 				render.JSON(w, r, response.GetResponse())
-				a.logger.Error(response, apikey, " msg - empty apikey")
+				a.logger.WithFields(logrus.Fields{
+					"param":  param,
+					"apikey": "empty",
+				}).Error(response)
 				return
 			}
 
 			activate := adminGuard.CanActivate(w, r)
 
-			if  activate != nil {
+			if activate != nil {
 				if !activate.(bool) {
 					return
 				}
@@ -69,28 +65,13 @@ func (a *AuthGuard) CanActivate() func(next http.Handler) http.Handler {
 				return
 			}
 
-			instance, err := a.store.Read(param)
-			if err != nil {
-				response.StatusCode = http.StatusBadRequest
-				response.Message = []any{"Unable to read instance.", err.Error()}
+			if *a.instance.Apikey != apikey {
 				render.JSON(w, r, response.GetResponse())
-				a.logger.Error(response)
-				return
-			}
-
-			if instance == nil {
-				response.Message = []any{
-					"Invalid instance: " + param,
-					"Instance not found",
-				}
-				render.JSON(w, r, response.GetResponse())
-				a.logger.Error(response)
-				return
-			}
-
-			if *instance.Apikey != apikey {
-				render.JSON(w, r, response.GetResponse())
-				a.logger.Error(response, " msg - invalid apikey")
+				a.logger.WithFields(logrus.Fields{
+					"param":      param,
+					"apikey":     apikey,
+					"licenseKey": a.instance.Apikey,
+				}).Error("invalid apikey")
 				return
 			}
 

@@ -23,7 +23,6 @@ type appContext struct {
 	Logger  *logrus.Entry
 	Cfg     *config.AppConfig
 	Router  *chi.Mux
-	Storage *whatsapp.Store
 	Amqp    *messaging.Amqp
 }
 
@@ -31,7 +30,7 @@ type Provider struct {
 	Ctx *appContext
 }
 
-func NewProvider() *Provider{
+func NewProvider() *Provider {
 	return &Provider{}
 }
 
@@ -57,7 +56,7 @@ func App(provider *Provider) {
 	if err != nil {
 		logger.Panic("Problems with the sqlite database url: ", err)
 	}
-	storage, err := whatsapp.StoreConnect(dbUrl)
+
 	if err != nil {
 		logger.Panic("Failed to initialize the storage: ", err)
 	}
@@ -70,10 +69,20 @@ func App(provider *Provider) {
 		logger.Panic("amqp connection failed: ", err)
 	}
 
-	manager := instance.NewInstancesManager(storage, msgClient)
+	wa := whatsapp.NewInstance(
+		cfg.Container.ID,
+		cfg.Container.Name,
+		"",
+		"",
+		config.LicenseKey,
+		whatsapp.ACTIVE,
+		msgClient,
+	)
+
+	manager := instance.NewInstancesManager()
 	logger.Info("Instance Manager initialized")
 
-	instanceService := instance.NewService(storage, manager, msgClient, cfg.Routes.MsManager)
+	instanceService := instance.NewService(wa, msgClient, cfg.Routes.MsManager)
 	logger.Info("InstanceService loaded.")
 
 	go func() {
@@ -99,7 +108,7 @@ func App(provider *Provider) {
 
 	sendmessageRoutes := routers.NewSendMessageRouter(
 		handler.NewSendMessage(
-			sendmessage.NewService(storage, manager, msgClient, ctx),
+			sendmessage.NewService(wa, ctx),
 		),
 	)
 	logger.WithFields(
@@ -119,13 +128,12 @@ func App(provider *Provider) {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
 	logger.Info("Loaded middlewares")
-	authGuard := guards.NewAuthGuard(storage, cfg.GlobalToken)
-	instanceGuard := guards.NewInstanceGuard(&manager.Wa, storage, cfg.GlobalToken)
+	authGuard := guards.NewAuthGuard(wa, cfg.GlobalToken)
+	instanceGuard := guards.NewInstanceGuard(wa, cfg.GlobalToken)
 
 	logger.Info("Grouped router initialized")
 	instanceRouter := instanceRoutes.
 		Auth(authGuard).
-		GlobalMiddleware(instanceGuard.IsAnInstance).
 		RootPath("/instance").
 		RootParam("/{instance}").
 		Routers(
@@ -140,8 +148,8 @@ func App(provider *Provider) {
 				InstanceMiddleware: []handler.InstanceMiddleware{instanceGuard.IsLoggedIn},
 			},
 			routers.InnerRouters{
-				Path:               "/",
-				Router:             msManagerRoutes,
+				Path:   "/",
+				Router: msManagerRoutes,
 			},
 		)
 
@@ -153,7 +161,6 @@ func App(provider *Provider) {
 	provider.Ctx = &appContext{
 		Logger:  logger,
 		Cfg:     cfg,
-		Storage: storage,
 		Router:  r,
 		Amqp:    msgClient,
 	}

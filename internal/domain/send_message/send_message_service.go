@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"codechat.dev/contract"
-	"codechat.dev/internal/domain/instance"
 	"codechat.dev/internal/whatsapp"
 	"codechat.dev/pkg/messaging"
 	"codechat.dev/pkg/utils"
@@ -22,22 +21,18 @@ import (
 )
 
 type Service struct {
-	Logger    *logrus.Entry
-	Manager   *instance.InstancesManager
-	Messaging *messaging.Amqp
-	Store     *whatsapp.Store
-	Ctx       context.Context
+	logger   *logrus.Entry
+	instance *whatsapp.Instance
+	Ctx      context.Context
 }
 
-func NewService(store *whatsapp.Store, manager *instance.InstancesManager, messaging *messaging.Amqp, ctx context.Context) *Service {
+func NewService(instance *whatsapp.Instance, ctx context.Context) *Service {
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.JSONFormatter{})
 	return &Service{
-		Logger:    logger.WithFields(logrus.Fields{"name": "sendmessage-service"}),
-		Manager:   manager,
-		Messaging: messaging,
-		Store:     store,
-		Ctx:       ctx,
+		logger:   logger.WithFields(logrus.Fields{"name": "sendmessage-service"}),
+		instance: instance,
+		Ctx:      ctx,
 	}
 }
 
@@ -204,12 +199,12 @@ func (s *Service) sendMessageWithTyping(
 
 				err := client.SubscribePresence(*to)
 				if err != nil {
-					s.Logger.Error(err.Error())
+					s.logger.Error(err.Error())
 				}
 
 				err = client.SendChatPresence(*to, chatPresence, mediaPresence)
 				if err != nil {
-					s.Logger.Error(err.Error())
+					s.logger.Error(err.Error())
 				}
 			}
 
@@ -218,7 +213,7 @@ func (s *Service) sendMessageWithTyping(
 			if widthPresence {
 				err := client.SendChatPresence(*to, types.ChatPresencePaused, types.ChatPresenceMediaText)
 				if err != nil {
-					s.Logger.Error(err.Error())
+					s.logger.Error(err.Error())
 				}
 			}
 		}
@@ -228,8 +223,8 @@ func (s *Service) sendMessageWithTyping(
 		})
 
 		if err != nil {
-			fmt.Println("SEND ERROR: ", err)
-			s.Messaging.SendMessage(string(messaging.SEND_MESSAGE), whatsapp.PreparedMessage(
+			s.logger.Error("SEND ERROR: ", err)
+			s.instance.Messaging.SendMessage(string(messaging.SEND_MESSAGE), whatsapp.PreparedMessage(
 				messaging.INSTANCE_ERROR,
 				instance,
 				map[string]any{
@@ -247,7 +242,7 @@ func (s *Service) sendMessageWithTyping(
 			return
 		}
 
-		s.Messaging.SendMessage(string(messaging.SEND_MESSAGE), whatsapp.PreparedMessage(
+		s.instance.Messaging.SendMessage(string(messaging.SEND_MESSAGE), whatsapp.PreparedMessage(
 			messaging.SEND_MESSAGE,
 			instance,
 			map[string]any{
@@ -257,7 +252,7 @@ func (s *Service) sendMessageWithTyping(
 					"message":   message,
 				},
 				"Error": map[string]any{
-					"IsError":     false,
+					"IsError": false,
 				},
 			},
 		))
@@ -269,18 +264,13 @@ func (s *Service) sendMessageWithTyping(
 func (s *Service) TextMessage(param string, data *contract.TextMessage, quoted *contract.Quoted) (json any, status int, err error) {
 	status = http.StatusBadRequest
 
-	instance, err := s.Manager.GetInstance(param)
-	if err != nil {
-		return
-	}
-
 	to, _ := types.ParseJID(utils.FormatJid(data.Recipient))
 
 	var contextInfo proto.ContextInfo
 
 	setQuotedMessage(&contextInfo, quoted)
 
-	err = setMentionedGroup(instance.Client, &to, &data.Options, &contextInfo)
+	err = setMentionedGroup(s.instance.Client, &to, &data.Options, &contextInfo)
 	if err != nil {
 		return
 	}
@@ -292,7 +282,7 @@ func (s *Service) TextMessage(param string, data *contract.TextMessage, quoted *
 		},
 	}
 
-	id, status, err := s.sendMessageWithTyping(instance, &to, &message, &data.Options)
+	id, status, err := s.sendMessageWithTyping(s.instance, &to, &message, &data.Options)
 	if err != nil {
 		return
 	}
@@ -305,17 +295,12 @@ func (s *Service) TextMessage(param string, data *contract.TextMessage, quoted *
 func (s *Service) LinkMessage(param string, data *contract.LinkMessage, quoted *contract.Quoted) (json any, status int, err error) {
 	status = http.StatusBadRequest
 
-	instance, err := s.Manager.GetInstance(param)
-	if err != nil {
-		return
-	}
-
 	var contextInfo proto.ContextInfo
 
 	to, _ := types.ParseJID(utils.FormatJid(data.Recipient))
 
 	setQuotedMessage(&contextInfo, quoted)
-	err = setMentionedGroup(instance.Client, &to, &data.Options, &contextInfo)
+	err = setMentionedGroup(s.instance.Client, &to, &data.Options, &contextInfo)
 	if err != nil {
 		return
 	}
@@ -329,7 +314,7 @@ func (s *Service) LinkMessage(param string, data *contract.LinkMessage, quoted *
 
 	jpegThumbnail, _, err := utils.GetMediaByte(imageUrl)
 	if err != nil {
-		s.Logger.Error("Failed to generate jpegThumbnail:", err)
+		s.logger.Error("Failed to generate jpegThumbnail:", err)
 	}
 
 	title := preview["title"]
@@ -372,7 +357,7 @@ func (s *Service) LinkMessage(param string, data *contract.LinkMessage, quoted *
 		message.ExtendedTextMessage.ThumbnailHeight = &height
 	}
 
-	id, status, err := s.sendMessageWithTyping(instance, &to, &message, &data.Options)
+	id, status, err := s.sendMessageWithTyping(s.instance, &to, &message, &data.Options)
 	if err != nil {
 		return
 	}
@@ -385,11 +370,6 @@ func (s *Service) LinkMessage(param string, data *contract.LinkMessage, quoted *
 func (s *Service) MediaMessage(param, mime string, data *contract.MediaMessage, quoted *contract.Quoted) (json any, status int, err error) {
 	status = http.StatusBadRequest
 
-	instance, err := s.Manager.GetInstance(param)
-	if err != nil {
-		return
-	}
-
 	var contextInfo proto.ContextInfo
 
 	bytes, headers, err := utils.GetMediaByte(data.Message.Url)
@@ -397,7 +377,7 @@ func (s *Service) MediaMessage(param, mime string, data *contract.MediaMessage, 
 		return
 	}
 
-	upload, err := instance.Client.Upload(s.Ctx, bytes, utils.GetMediaType(data.Message.MediaType))
+	upload, err := s.instance.Client.Upload(s.Ctx, bytes, utils.GetMediaType(data.Message.MediaType))
 	if err != nil {
 		return
 	}
@@ -409,7 +389,7 @@ func (s *Service) MediaMessage(param, mime string, data *contract.MediaMessage, 
 	to, _ := types.ParseJID(utils.FormatJid(data.Recipient))
 
 	setQuotedMessage(&contextInfo, quoted)
-	err = setMentionedGroup(instance.Client, &to, &data.Options, &contextInfo)
+	err = setMentionedGroup(s.instance.Client, &to, &data.Options, &contextInfo)
 	if err != nil {
 		return
 	}
@@ -422,7 +402,7 @@ func (s *Service) MediaMessage(param, mime string, data *contract.MediaMessage, 
 		return
 	}
 
-	id, status, err := s.sendMessageWithTyping(instance, &to, message, &data.Options)
+	id, status, err := s.sendMessageWithTyping(s.instance, &to, message, &data.Options)
 	if err != nil {
 		return
 	}
@@ -435,23 +415,18 @@ func (s *Service) MediaMessage(param, mime string, data *contract.MediaMessage, 
 func (s *Service) FileMessage(param string, data *contract.MediaMessage, mimetype string, file []byte, quoted *contract.Quoted) (json any, status int, err error) {
 	status = http.StatusBadRequest
 
-	instance, err := s.Manager.GetInstance(param)
-	if err != nil {
-		return
-	}
-
 	var contextInfo proto.ContextInfo
 
 	to, _ := types.ParseJID(utils.FormatJid(data.Recipient))
 
 	setQuotedMessage(&contextInfo, quoted)
 
-	err = setMentionedGroup(instance.Client, &to, &data.Options, &contextInfo)
+	err = setMentionedGroup(s.instance.Client, &to, &data.Options, &contextInfo)
 	if err != nil {
 		return
 	}
 
-	upload, err := instance.Client.Upload(s.Ctx, file, utils.GetMediaType(data.Message.MediaType))
+	upload, err := s.instance.Client.Upload(s.Ctx, file, utils.GetMediaType(data.Message.MediaType))
 	if err != nil {
 		return
 	}
@@ -464,7 +439,7 @@ func (s *Service) FileMessage(param string, data *contract.MediaMessage, mimetyp
 		return
 	}
 
-	id, status, err := s.sendMessageWithTyping(instance, &to, message, &data.Options)
+	id, status, err := s.sendMessageWithTyping(s.instance, &to, message, &data.Options)
 	if err != nil {
 		return
 	}
@@ -477,18 +452,13 @@ func (s *Service) FileMessage(param string, data *contract.MediaMessage, mimetyp
 func (s *Service) LocationMessage(param string, data *contract.LocationMessage, quoted *contract.Quoted) (json any, status int, err error) {
 	status = http.StatusBadRequest
 
-	instance, err := s.Manager.GetInstance(param)
-	if err != nil {
-		return
-	}
-
 	to, _ := types.ParseJID(utils.FormatJid(data.Recipient))
 
 	var contextInfo proto.ContextInfo
 
 	setQuotedMessage(&contextInfo, quoted)
 
-	err = setMentionedGroup(instance.Client, &to, &data.Options, &contextInfo)
+	err = setMentionedGroup(s.instance.Client, &to, &data.Options, &contextInfo)
 	if err != nil {
 		return
 	}
@@ -513,7 +483,7 @@ func (s *Service) LocationMessage(param string, data *contract.LocationMessage, 
 		},
 	}
 
-	id, status, err := s.sendMessageWithTyping(instance, &to, &message, &data.Options)
+	id, status, err := s.sendMessageWithTyping(s.instance, &to, &message, &data.Options)
 	if err != nil {
 		return
 	}
@@ -525,11 +495,6 @@ func (s *Service) LocationMessage(param string, data *contract.LocationMessage, 
 func (s *Service) ContactMessage(param string, data *contract.ContactMessage, quoted *contract.Quoted) (json any, status int, err error) {
 	status = http.StatusBadRequest
 
-	instance, err := s.Manager.GetInstance(param)
-	if err != nil {
-		return
-	}
-
 	to, _ := types.ParseJID(utils.FormatJid(data.Recipient))
 
 	var contextInfo proto.ContextInfo
@@ -537,7 +502,7 @@ func (s *Service) ContactMessage(param string, data *contract.ContactMessage, qu
 
 	setQuotedMessage(&contextInfo, quoted)
 
-	err = setMentionedGroup(instance.Client, &to, &data.Options, &contextInfo)
+	err = setMentionedGroup(s.instance.Client, &to, &data.Options, &contextInfo)
 	if err != nil {
 		return
 	}
@@ -589,7 +554,7 @@ func (s *Service) ContactMessage(param string, data *contract.ContactMessage, qu
 		}
 	}
 
-	id, status, err := s.sendMessageWithTyping(instance, &to, &message, &data.Options)
+	id, status, err := s.sendMessageWithTyping(s.instance, &to, &message, &data.Options)
 	if err != nil {
 		return
 	}
@@ -605,18 +570,13 @@ func (s *Service) ContactMessage(param string, data *contract.ContactMessage, qu
 func (s *Service) ListMessage(param string, data *contract.ListMessage, quoted *contract.Quoted) (json any, status int, err error) {
 	status = http.StatusBadRequest
 
-	instance, err := s.Manager.GetInstance(param)
-	if err != nil {
-		return
-	}
-
 	to, _ := types.ParseJID((utils.FormatJid(data.Recipient)))
 
 	var contextInfo proto.ContextInfo
 
 	setQuotedMessage(&contextInfo, quoted)
 
-	err = setMentionedGroup(instance.Client, &to, &data.Options, &contextInfo)
+	err = setMentionedGroup(s.instance.Client, &to, &data.Options, &contextInfo)
 	if err != nil {
 		return
 	}
@@ -654,7 +614,7 @@ func (s *Service) ListMessage(param string, data *contract.ListMessage, quoted *
 		},
 	}
 
-	id, status, err := s.sendMessageWithTyping(instance, &to, &message, &data.Options)
+	id, status, err := s.sendMessageWithTyping(s.instance, &to, &message, &data.Options)
 	if err != nil {
 		return
 	}
@@ -666,18 +626,13 @@ func (s *Service) ListMessage(param string, data *contract.ListMessage, quoted *
 func (s *Service) PoolMessage(param string, data *contract.PollMessage, quoted *contract.Quoted) (json any, status int, err error) {
 	status = http.StatusBadRequest
 
-	instance, err := s.Manager.GetInstance(param)
-	if err != nil {
-		return
-	}
-
 	to, _ := types.ParseJID(utils.FormatJid(data.Recipient))
 
 	var contextInfo proto.ContextInfo
 
 	setQuotedMessage(&contextInfo, quoted)
 
-	err = setMentionedGroup(instance.Client, &to, &data.Options, &contextInfo)
+	err = setMentionedGroup(s.instance.Client, &to, &data.Options, &contextInfo)
 	if err != nil {
 		return
 	}
@@ -705,7 +660,7 @@ func (s *Service) PoolMessage(param string, data *contract.PollMessage, quoted *
 		},
 	}
 
-	id, status, err := s.sendMessageWithTyping(instance, &to, &message, &data.Options)
+	id, status, err := s.sendMessageWithTyping(s.instance, &to, &message, &data.Options)
 	if err != nil {
 		return
 	}
@@ -716,11 +671,6 @@ func (s *Service) PoolMessage(param string, data *contract.PollMessage, quoted *
 
 func (s *Service) ReactionMessage(param string, data *contract.ReactionMessage) (json any, status int, err error) {
 	status = http.StatusBadRequest
-
-	instance, err := s.Manager.GetInstance(param)
-	if err != nil {
-		return
-	}
 
 	to, _ := types.ParseJID(utils.FormatJid(data.Recipient))
 
@@ -735,7 +685,7 @@ func (s *Service) ReactionMessage(param string, data *contract.ReactionMessage) 
 		},
 	}
 
-	id, status, err := s.sendMessageWithTyping(instance, &to, &message, nil)
+	id, status, err := s.sendMessageWithTyping(s.instance, &to, &message, nil)
 
 	json = map[string]string{"messageId": id}
 
@@ -745,18 +695,13 @@ func (s *Service) ReactionMessage(param string, data *contract.ReactionMessage) 
 func (s *Service) EditMessage(param, messageId string, data *contract.EditMessage) (json any, status int, err error) {
 	status = http.StatusBadRequest
 
-	instance, err := s.Manager.GetInstance(param)
-	if err != nil {
-		return
-	}
-
 	to, _ := types.ParseJID(utils.FormatJid(data.Recipient))
 
-	newMessage := instance.Client.BuildEdit(to, messageId, &proto.Message{
+	newMessage := s.instance.Client.BuildEdit(to, messageId, &proto.Message{
 		Conversation: &data.Message.NewContent,
 	})
 
-	id, status, err := s.sendMessageWithTyping(instance, &to, newMessage, &contract.Options{})
+	id, status, err := s.sendMessageWithTyping(s.instance, &to, newMessage, &contract.Options{})
 	if err != nil {
 		return
 	}

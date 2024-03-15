@@ -51,9 +51,7 @@ func (x *Instance) Routers(routes ...InnerRouters) *chi.Mux {
 		r.Use(guards.ApplyGuards(x.authMiddle)...)
 
 		h := handler.NewHandlerMiddleware()
-
-		r.Post("/", h.Middle(x.instanceMiddleware...).ResponseHandler(x.handler.PostInstanceCreate))
-		r.Get("/", h.Middle(x.instanceMiddleware...).ResponseHandler(x.handler.GetAllInstance))
+		
 		r.Get(x.rootParam, h.Middle(x.instanceMiddleware...).ResponseHandler(x.handler.GetInstance))
 		r.Delete(x.rootParam, h.Middle(x.instanceMiddleware...).ResponseHandler(x.handler.DeleteInstance))
 	})

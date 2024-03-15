@@ -17,8 +17,7 @@ import (
 func main() {
 	provider := internal.NewProvider()
 	internal.App(provider)
-
-	defer provider.Ctx.Storage.Client.Close()
+	
 	defer provider.Ctx.Amqp.Conn.Close()
 
 	logger := provider.Ctx.Logger
@@ -38,11 +37,14 @@ func main() {
 	}()
 
 	provider.Ctx.Amqp.SendMessage(string(messaging.APP_STATUS), map[string]any{
-		"instance": map[string]string{
+		"Event": messaging.APP_STATUS,
+		"Instance": map[string]string{
 			"instanceId": provider.Ctx.Cfg.Container.ID,
 			"name":       provider.Ctx.Cfg.Container.Name,
 		},
-		"status": "on",
+		"Data": map[string]string{
+			"status": "on",
+		},
 	})
 
 	logger.WithFields(logrus.Fields{"port": srvPort}).Info("Server started")
@@ -54,11 +56,14 @@ func main() {
 	os.Stdout.Sync()
 
 	provider.Ctx.Amqp.SendMessage(string(messaging.APP_STATUS), map[string]any{
-		"instance": map[string]string{
+		"Event": messaging.APP_STATUS,
+		"Instance": map[string]string{
 			"instanceId": provider.Ctx.Cfg.Container.ID,
 			"name":       provider.Ctx.Cfg.Container.Name,
 		},
-		"status": "off",
+		"Data": map[string]string{
+			"status": "off",
+		},
 	})
 
 	logger.WithFields(logrus.Fields{"signal": sig}).Log(logrus.WarnLevel, "Server shuting down")

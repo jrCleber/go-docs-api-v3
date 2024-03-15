@@ -77,7 +77,6 @@ type Instance struct {
 	Client        *whatsmeow.Client    `json:"-"`
 	Logger        *logrus.Entry        `json:"-"`
 	Messaging     *messaging.Amqp      `json:"-"`
-	Store         *Store               `json:"-"`
 }
 
 type SendMessage struct {
@@ -97,7 +96,6 @@ type ConnectionUpdate struct {
 func NewInstance(
 	id, name, externalId, phoneNumber, apikey string,
 	state StateEnum, messaging *messaging.Amqp,
-	store *Store, containerName string,
 ) *Instance {
 	if state == "" {
 		state = ACTIVE
@@ -248,13 +246,17 @@ func (i *Instance) NewConnection() error {
 }
 
 func (i *Instance) Connect() error {
-	deviceStore, err := utils.LoadDeviceWa(&i.WhatsApp.Number)
+	device, err := utils.LoadDeviceWa()
 	if err != nil {
 		return err
 	}
 
+	if device == nil {
+		return errors.New("not a device created yet")
+	}
+
 	clientLog := waLog.Stdout("Client", "ERROR", true)
-	client := whatsmeow.NewClient(deviceStore, clientLog)
+	client := whatsmeow.NewClient(device, clientLog)
 
 	if client.Store == nil {
 		return errors.New("no Store")
@@ -352,11 +354,6 @@ func (i *Instance) handlers(evt interface{}) {
 			Message:      "connected successfully",
 			Timestamp:    time.Now(),
 		}))
-		i.Store.Update(i.ID, &Instance{
-			WhatsApp: &WhatsApp{
-				Number: i.Client.Store.ID.User,
-			},
-		})
 		return
 	case *events.Contact:
 		client.SendMessage(string(messaging.CONTACT), PreparedMessage(messaging.CONTACT, i, value))
@@ -414,10 +411,6 @@ func (i *Instance) handlers(evt interface{}) {
 			"Reason":      value.Reason,
 			"Description": value.Reason.String(),
 		}))
-		i.Store.Update(i.ID, &Instance{
-			Connection: i.Connection,
-			Status:     i.Status,
-		})
 	case *events.MarkChatAsRead:
 		client.SendMessage(string(messaging.MARK_CHAT_READ), PreparedMessage(messaging.MARK_CHAT_READ, i, value))
 		return

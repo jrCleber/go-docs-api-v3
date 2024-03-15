@@ -35,7 +35,7 @@ func NewDevice() (*store.Device, error) {
 	return device, nil
 }
 
-func LoadDeviceWa(phoneNumber *string) (*store.Device, error) {
+func LoadDeviceWa() (*store.Device, error) {
 	dbLog := waLog.Stdout("Database", "DEBUG", true)
 	container, err := sqlstore.New("sqlite3", DbUrl, dbLog)
 
@@ -46,22 +46,13 @@ func LoadDeviceWa(phoneNumber *string) (*store.Device, error) {
 	clientName := "CodeChat"
 
 	store.DeviceProps.Os = &clientName
-	var deviceStore *store.Device
 
-	devices, err := container.GetAllDevices()
+	device, err := container.GetFirstDevice()
 	if err != nil {
 		logger.Warning("Device not found: ", err)
 	}
 
-	for _, v := range devices {
-		jid := v.ID.String()
-		if strings.Contains(jid, *phoneNumber) {
-			deviceStore = v
-			break
-		}
-	}
-
-	return deviceStore, nil
+	return device, nil
 }
 
 func LoadAllDevicesWa() ([]*store.Device, error) {

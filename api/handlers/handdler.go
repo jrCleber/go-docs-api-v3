@@ -127,10 +127,12 @@ func (h *HandlerMiddleware) Middle(m ...InstanceMiddleware) *HandlerMiddleware {
 
 func (h *HandlerMiddleware) ResponseHandler(handle HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		for _, f := range h.middle {
-			next := f(w, r)
-			if !next {
-				return
+		if len(h.middle) > 0 {
+			for _, f := range h.middle {
+				next := f(w, r)
+				if !next {
+					return
+				}
 			}
 		}
 

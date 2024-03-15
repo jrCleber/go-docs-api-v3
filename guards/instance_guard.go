@@ -2,11 +2,9 @@ package guards
 
 import (
 	"net/http"
-	"slices"
 	"strings"
 
 	handler "codechat.dev/api/handlers"
-	"codechat.dev/internal/domain/instance"
 	"codechat.dev/internal/whatsapp"
 	"codechat.dev/pkg/utils"
 	"github.com/go-chi/chi/v5"
@@ -15,55 +13,18 @@ import (
 )
 
 type InstanceGuard struct {
-	instances   *instance.MapInstances
-	store       *whatsapp.Store
+	instance    *whatsapp.Instance
 	globalToken string
 	logger      *logrus.Entry
 }
 
-func NewInstanceGuard(instances *instance.MapInstances, store *whatsapp.Store, globalToken string) *InstanceGuard {
+func NewInstanceGuard(instance *whatsapp.Instance, globalToken string) *InstanceGuard {
 	logger := logrus.New()
 	return &InstanceGuard{
-		instances:   instances,
-		store:       store,
+		instance:    instance,
 		globalToken: globalToken,
 		logger:      logger.WithFields(logrus.Fields{"name": "instance-guard"}),
 	}
-}
-
-func (i *InstanceGuard) IsAnInstance(w http.ResponseWriter, r *http.Request) bool {
-	adminGuard := NewAdminGuard(i.globalToken)
-
-	if activate := adminGuard.CanActivate(w, r); activate != nil {
-		if !activate.(bool) {
-			return !activate.(bool)
-		}
-		return true
-	}
-
-	param := chi.URLParam(r, "instance")
-	response := handler.NewResponse(http.StatusBadRequest)
-
-	findInstance, err := i.store.Read(param)
-
-	render.Status(r, response.StatusCode)
-
-	if err != nil {
-		response.Message = []any{
-			"Invalid instance: " + param,
-			err.Error(),
-		}
-		render.JSON(w, r, response.GetResponse())
-		return false
-	}
-
-	if slices.Contains(adminGuard.Allow.Paths, r.URL.Path) &&
-		slices.Contains(adminGuard.Allow.Methods, r.Method) &&
-		findInstance.Client == nil {
-		return true
-	}
-
-	return true
 }
 
 func isConnectRoute(r *http.Request) bool {
@@ -81,13 +42,12 @@ func (i *InstanceGuard) IsLoggedIn(w http.ResponseWriter, r *http.Request) bool 
 	param := chi.URLParam(r, "instance")
 	response := handler.NewResponse(http.StatusBadRequest)
 
-	findInstance, err := i.store.Read(param)
-	if err != nil {
-		response.Message = []any{
-			"Invalid instance: " + param,
-			err.Error(),
-		}
+	if param != i.instance.Name {
 		render.JSON(w, r, response.GetResponse())
+		i.logger.WithFields(logrus.Fields{
+			"param":        param,
+			"instanceName": i.instance.Name,
+		}).Error(response)
 		return false
 	}
 
@@ -95,9 +55,7 @@ func (i *InstanceGuard) IsLoggedIn(w http.ResponseWriter, r *http.Request) bool 
 		return true
 	}
 
-	instance := (*i.instances)[findInstance.ID]
-
-	if instance.Client != nil && !instance.Client.IsLoggedIn() {
+	if i.instance.Client != nil && !i.instance.Client.IsLoggedIn() {
 		response.StatusCode = http.StatusForbidden
 		response.Message = []any{utils.StringJoin("", "Instance ", param, " not connected.")}
 
