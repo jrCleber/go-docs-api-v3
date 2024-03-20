@@ -1792,7 +1792,7 @@ tags:
   - name: '[10]'
     description: ''
 servers:
-  - url: https://apiv3.codechat.dev/api/v3/{instance}
+  - url: https://apiv3.codechat.dev/
     description: ''
     variables:
       instance:

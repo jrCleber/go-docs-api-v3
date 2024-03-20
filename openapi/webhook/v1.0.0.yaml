@@ -21,13 +21,13 @@ info:
 
     ---
 
-    ### Trabalhando com `multipart/form-data` em Webhooks
+    ### Trabalhando com `application/json` em Webhooks
 
-    Os webhooks configurados para usar `multipart/form-data` enviam dados como se estivessem submetendo um formulário web. Isso significa que os dados são enviados em partes, cada uma contendo possivelmente diferentes tipos de conteúdo. No contexto de webhooks, isso pode ser útil para transmitir dados junto com arquivos diretamente para o seu endpoint, permitindo que você processe ambos com uma única requisição.
+    Os webhooks configurados para usar `application/json` enviam dados como se estivessem submetendo um formulário web. Isso significa que os dados são enviados em partes, cada uma contendo possivelmente diferentes tipos de conteúdo. No contexto de webhooks, isso pode ser útil para transmitir dados junto com arquivos diretamente para o seu endpoint, permitindo que você processe ambos com uma única requisição.
 
-    ### Manipulando `multipart/form-data` em Node.js
+    ### Manipulando `application/json` em Node.js
 
-    Para trabalhar com dados `multipart/form-data` em Node.js, especialmente ao receber esse tipo de conteúdo através de webhooks, é recomendável usar um middleware capaz de parsear esse tipo de dados. Um dos pacotes mais comuns para essa finalidade é o `multer`, que é projetado para lidar com dados `multipart/form-data` de uma forma fácil e eficiente.
+    Para trabalhar com dados `application/json` em Node.js, especialmente ao receber esse tipo de conteúdo através de webhooks, é recomendável usar um middleware capaz de parsear esse tipo de dados. Um dos pacotes mais comuns para essa finalidade é o `multer`, que é projetado para lidar com dados `application/json` de uma forma fácil e eficiente.
 
     #### Passos para Utilizar o Multer
 
@@ -40,7 +40,7 @@ info:
       yarn add multer
       ```
 
-    2. **Configuração do Middleware**: Em seguida, importe o `multer` e configure-o como um middleware em sua aplicação. Você pode configurá-lo globalmente ou apenas para rotas específicas que esperam receber `multipart/form-data`.
+    2. **Configuração do Middleware**: Em seguida, importe o `multer` e configure-o como um middleware em sua aplicação. Você pode configurá-lo globalmente ou apenas para rotas específicas que esperam receber `application/json`.
       ```js
       const express = require('express');
       ```
@@ -79,7 +79,7 @@ info:
         res.status(200).send('Dados recebidos com sucesso.');
       });
       ```
-    3. **Processamento dos Dados**: Quando um webhook é acionado e sua requisição chega ao endpoint configurado, o `multer` parseia automaticamente o multipart/form-data, salvando os arquivos no diretório especificado e tornando os dados dos arquivos e qualquer outro campo de texto disponíveis em req.files e req.body, respectivamente.
+    3. **Processamento dos Dados**: Quando um webhook é acionado e sua requisição chega ao endpoint configurado, o `multer` parseia automaticamente o application/json, salvando os arquivos no diretório especificado e tornando os dados dos arquivos e qualquer outro campo de texto disponíveis em req.files e req.body, respectivamente.
 
   version: 1.0.0
   contact:
@@ -2940,6 +2940,58 @@ components:
                 description:
                   title: Description
                   type: string
+    ApplicationStatus:
+      title: Estado da Aplicação
+      type: object
+      description: >
+        Define o esquema para o estado da aplicação, contendo informações sobre o evento disparado,
+        a instância da aplicação afetada e os dados relevantes ao estado atual.
+      required:
+        - event
+        - instance
+        - data
+      properties:
+        event:
+          title: Evento
+          description: Tipo do evento, neste caso, uma alteração de estado da aplicação.
+          type: string
+          enum:
+            - application.status
+        instance:
+          title: Instância
+          description: >
+            Identifica a instância da aplicação afetada pela alteração de estado, incluindo um
+            identificador único e o nome da instância para fácil referência.
+          type: object
+          required:
+            - instanceId
+            - name
+          properties:
+            instanceId:
+              title: ID da Instância
+              description: Identificador único da instância da aplicação.
+              type: string
+            name:
+              title: Nome
+              description: Nome legível da instância da aplicação.
+              type: string
+        data:
+          title: Dados
+          description: >
+            Contém detalhes específicos sobre o estado atual da aplicação, incluindo se
+            está ativa ('on') ou inativa ('off').
+          type: object
+          required:
+            - status
+          properties:
+            status:
+              title: Status
+              description: Indica o estado atual da aplicação, podendo estar 'on' (ativa) ou 'off' (inativa).
+              type: string
+              enum:
+                - on
+                - off
+              default: on
 
 tags:
   - name: Alterações
@@ -3025,6 +3077,28 @@ x-tagGroups:
   #     - keyMessage
 
 x-webhooks:
+  application_status:
+    post:
+      operationId: applicationStatus
+      summary: Estado da Aaplicação
+      description: |
+        ### `application.status`
+
+        Este webhook é disparado para notificar sobre alterações no estado da aplicação, permitindo aos sistemas externos reagir de acordo. Isso é útil para monitoramento em tempo real e gestão de recursos, garantindo que as dependências estejam cientes do estado atual da aplicação e possam tomar ações apropriadas, como escalonar recursos ou enviar notificações para administradores.
+      tags:
+        - Estado do App
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationStatus'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessfulResponse'
+
   app_state:
     post:
       operationId: appState
@@ -3087,7 +3161,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/AppState'
       responses:
@@ -3114,7 +3188,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/AppStateSyncComplete'
       responses:
@@ -3138,7 +3212,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/ArchiveChat'
       responses:
@@ -3162,7 +3236,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/BlockList'
       responses:
@@ -3186,7 +3260,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/CallAccept'
       responses:
@@ -3210,7 +3284,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/CallOffer'
       responses:
@@ -3234,7 +3308,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/CallOfferNotice'
       responses:
@@ -3258,7 +3332,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/CallRelayLatency'
       responses:
@@ -3282,7 +3356,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/CallTerminate'
       responses:
@@ -3410,7 +3484,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/ClientOutdated'
       responses:
@@ -3448,7 +3522,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/ConnectFailure'
       responses:
@@ -3472,7 +3546,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/Contact'
       responses:
@@ -3496,7 +3570,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/DeleteForMe'
       responses:
@@ -3522,7 +3596,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/GroupUpdate'
       responses:
@@ -3548,7 +3622,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/GroupUpdateSettings'
       responses:
@@ -3576,7 +3650,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/GroupUpdateParticipants'
       responses:
@@ -3600,7 +3674,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/HistorySyncConversation'
       responses:
@@ -3627,7 +3701,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/HistorySyncNonBlockingData'
       responses:
@@ -3651,7 +3725,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/HistorySyncPushName'
       responses:
@@ -3675,7 +3749,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/HistorySyncStatus'
       responses:
@@ -3701,7 +3775,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/IdentityChange'
       responses:
@@ -3726,7 +3800,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/KeepAliveRestored'
       responses:
@@ -3755,7 +3829,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/KeepAliveTimeout'
       responses:
@@ -3783,7 +3857,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/LabelAssociationChat'
       responses:
@@ -3813,7 +3887,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/LabelAssociationMessage'
       responses:
@@ -3843,7 +3917,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/LabelAssociationEdit'
       responses:
@@ -3868,7 +3942,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/LogOut'
       responses:
@@ -3890,7 +3964,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/MarkChatRead'
       responses:
@@ -3911,7 +3985,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/MediaRetry'
       responses:
@@ -3936,7 +4010,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/MediaRetryError'
       responses:
@@ -3958,7 +4032,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/MessageStart'
       responses:
@@ -3989,7 +4063,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/MessageUpdate'
       responses:
@@ -4020,7 +4094,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/NewMessage'
       responses:
@@ -4067,7 +4141,7 @@ x-webhooks:
         - Sincronização
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/OfflineSyncPreview'
       responses:
@@ -4093,7 +4167,7 @@ x-webhooks:
         - Sincronização
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/DeviceParing'
       responses:
@@ -4122,7 +4196,7 @@ x-webhooks:
         - Chat
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/PresenceUpdate'
       responses:
@@ -4155,7 +4229,7 @@ x-webhooks:
         - Dispositivo
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/PrivacySettings'
       responses:
@@ -4177,7 +4251,7 @@ x-webhooks:
         - Perfil
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/ProfilePicture'
       responses:
@@ -4199,7 +4273,7 @@ x-webhooks:
         - Perfil
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/ProfilePushName'
       responses:
@@ -4221,7 +4295,7 @@ x-webhooks:
         - Perfil
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/ProfilePushNameBusiness'
       responses:
@@ -4243,7 +4317,7 @@ x-webhooks:
         - Perfil
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/ProfilePushNameSelf'
       responses:
@@ -4265,7 +4339,7 @@ x-webhooks:
         - Chat
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/PinnedChat'
       responses:
@@ -4287,7 +4361,7 @@ x-webhooks:
         - Conexão
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/QrCodeUpdate'
       responses:
@@ -4312,7 +4386,7 @@ x-webhooks:
         - Conexão
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/ConnectionStream'
       responses:
@@ -4339,7 +4413,7 @@ x-webhooks:
         - $ref: '#/components/parameters/WhatsAppHeader'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/TemporaryBan'
       responses:
@@ -4367,7 +4441,7 @@ x-webhooks:
         - Mensagem
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/UndecryptableMessage'
       responses:
@@ -4391,7 +4465,7 @@ x-webhooks:
         - Chamada
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/UnknownCall'
       responses:
@@ -4419,7 +4493,7 @@ x-webhooks:
         - Conexão
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/WhatsAppConnected'
       responses:
@@ -4446,7 +4520,7 @@ x-webhooks:
         - Conexão
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/WebsocketDisconnected'
       responses:
@@ -4454,7 +4528,7 @@ x-webhooks:
           $ref: '#/components/responses/SuccessfulResponse'
 
   send_message:
-    post: 
+    post:
       operationId: sendMessage
       summary: Envio de Mensagem
       description: |
@@ -4467,22 +4541,21 @@ x-webhooks:
           - `messageID`: O identificador único da mensagem enviada, usado para rastrear e referenciar a mensagem no futuro.
           - `timestamp`: A data e hora em que a mensagem foi enviada, fornecendo um registro temporal do envio.
         - `message`: Estrutura que detalha o conteúdo da mensagem enviada, incluindo o tipo de conteúdo (`contentType`) e o próprio conteúdo (`content`), que pode variar dependendo do tipo de mensagem (texto, imagem, vídeo, etc.).
-        
+
         Em caso de erro:
         - `error`: Fornece detalhes sobre o erro ocorrido durante a tentativa de envio da mensagem, incluindo:
           - `isError`: Um indicador booleano de que ocorreu um erro.
           - `description`: Uma descrição textual do erro, fornecendo insights sobre a natureza do problema e possíveis ações corretivas.
-      parameters: 
-        - $ref: "#/components/parameters/InstanceIdHeader"
-        - $ref: "#/components/parameters/WhatsAppHeader"
-      tags: 
-        -  Mensagem
-      requestBody: 
-        content: 
-          multipart/form-data:
-            schema: 
-              $ref: "#/components/schemas/SendMessage"
-      responses: 
+      parameters:
+        - $ref: '#/components/parameters/InstanceIdHeader'
+        - $ref: '#/components/parameters/WhatsAppHeader'
+      tags:
+        - Mensagem
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessage'
+      responses:
         '200':
-          $ref: "#/components/responses/SuccessfulResponse"
-        
+          $ref: '#/components/responses/SuccessfulResponse'
